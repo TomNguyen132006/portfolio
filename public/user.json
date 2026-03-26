@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Tom Nguyen",
+    "github": "octocat",
+    "skills": ["React", "JavaScript"],
+    "role": "Frontend Developer"
+  },
+  {
+    "id": 2,
+    "name": "John Doe",
+    "github": "torvalds",
+    "skills": ["C", "Linux"],
+    "role": "System Engineer"
+  }
+]
