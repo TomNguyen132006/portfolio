@@ -5,6 +5,8 @@ import Auth from "./pages/Auth";
 import HR from "./pages/HR";
 import Candidate from "./pages/Candidate";
 import ResumeForm from "./pages/ResumeForm";
+import Favorites from "./pages/Favorites";
+import Compare from "./pages/Compare";
 
 function App() {
   return (
@@ -28,6 +30,11 @@ function App() {
 
         {/* 🏠 Default → Auth */}
         <Route path="/" element={<Auth />} />
+
+        <Route path="/favorites" element={<Favorites />} />
+        
+        <Route path="/compare" element={<Compare />} />
+        <Route path="/candidate/edit/:id" element={<ResumeForm />} />
 
         
 

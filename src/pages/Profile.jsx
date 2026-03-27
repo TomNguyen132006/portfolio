@@ -1,135 +1,259 @@
 import { useEffect, useState } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
-function Profile() {
+function ResumeForm() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const [user, setUser] = useState(location.state?.user || null);
-  const [repos, setRepos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const current = JSON.parse(localStorage.getItem("currentUser"));
+  const isEditMode = Boolean(id);
 
-  // 🔥 fallback for refresh (use accounts instead of users)
-  useEffect(() => {
-    if (!user) {
-      const saved = JSON.parse(localStorage.getItem("accounts")) || [];
+  const [form, setForm] = useState({
+    name: "",
+    role: "",
+    category: "",
+    location: "",
+    education: "",
+    summary: "",
+    skills: "",
+    certifications: "",
+    licenses: "",
+    linkedin: "",
+    portfolio: "",
+    github: ""
+  });
 
-      const found = saved
-        .flatMap(acc => acc.profiles || [])
-        .find(p => String(p.id) === String(id));
+  const formatUrl = (url) => {
+    const trimmed = (url || "").trim();
+    if (!trimmed) return "";
 
-      setUser(found);
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+      return trimmed;
     }
-  }, [id, user]);
 
-  // 🔥 GitHub fetch
+    return "https://" + trimmed;
+  };
+
+  const handleChange = (e) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const toArray = (value) =>
+    (value || "")
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
+
   useEffect(() => {
-    if (user && user.github) {
-      const username = user.github
-        .replace("https://github.com/", "")
-        .split("?")[0]
-        .trim();
+    if (!isEditMode) return;
 
-      fetch(`https://api.github.com/users/${username}/repos`)
-        .then(res => res.json())
-        .then(data => {
-          const cleaned = data
-            .filter(repo => !repo.fork)
-            .sort((a, b) => b.stargazers_count - a.stargazers_count)
-            .slice(0, 5);
+    let profile = location.state?.user;
 
-          setRepos(cleaned);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
+    if (!profile) {
+      const current = JSON.parse(localStorage.getItem("currentUser"));
+      profile = (current?.profiles || []).find(
+        (p) => String(p.id) === String(id)
+      );
     }
-  }, [user]);
 
-  // 🔥 toggle public/private
-  const togglePublic = () => {
+    if (profile) {
+      setForm({
+        name: profile.name || "",
+        role: profile.role || "",
+        category: profile.category || "",
+        location: profile.location || "",
+        education: profile.education || "",
+        summary: profile.summary || "",
+        skills: (profile.skills || []).join(", "),
+        certifications: (profile.certifications || []).join(", "),
+        licenses: (profile.licenses || []).join(", "),
+        linkedin: profile.linkedin || "",
+        portfolio: profile.portfolio || "",
+        github: profile.github || ""
+      });
+    }
+  }, [id, isEditMode, location.state]);
+
+  const handleSave = () => {
     const current = JSON.parse(localStorage.getItem("currentUser"));
 
-    const updatedProfiles = current.profiles.map(p =>
-      p.id === user.id
-        ? { ...p, isPublic: !p.isPublic }
-        : p
-    );
+    if (!current) {
+      alert("No current user found.");
+      return;
+    }
 
-    current.profiles = updatedProfiles;
+    if (!form.name.trim() || !form.role.trim()) {
+      alert("Name and role are required.");
+      return;
+    }
 
-    // update localStorage
-    localStorage.setItem("currentUser", JSON.stringify(current));
+    let updatedProfiles;
+
+    if (isEditMode) {
+      updatedProfiles = (current.profiles || []).map((profile) =>
+        String(profile.id) === String(id)
+          ? {
+              ...profile,
+              name: form.name.trim(),
+              role: form.role.trim(),
+              category: form.category.trim(),
+              location: form.location.trim(),
+              education: form.education.trim(),
+              summary: form.summary.trim(),
+              skills: toArray(form.skills),
+              certifications: toArray(form.certifications),
+              licenses: toArray(form.licenses),
+              linkedin: formatUrl(form.linkedin),
+              portfolio: formatUrl(form.portfolio),
+              github: formatUrl(form.github)
+            }
+          : profile
+      );
+    } else {
+      const newProfile = {
+        id: Date.now(),
+        email: current.email,
+        name: form.name.trim(),
+        role: form.role.trim(),
+        category: form.category.trim(),
+        location: form.location.trim(),
+        education: form.education.trim(),
+        summary: form.summary.trim(),
+        skills: toArray(form.skills),
+        certifications: toArray(form.certifications),
+        licenses: toArray(form.licenses),
+        linkedin: formatUrl(form.linkedin),
+        portfolio: formatUrl(form.portfolio),
+        github: formatUrl(form.github)
+      };
+
+      updatedProfiles = [...(current.profiles || []), newProfile];
+    }
+
+    const updatedCurrent = {
+      ...current,
+      profiles: updatedProfiles
+    };
+
+    localStorage.setItem("currentUser", JSON.stringify(updatedCurrent));
 
     const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
-
-    const updatedAccounts = accounts.map(acc =>
-      acc.email === current.email ? current : acc
+    const updatedAccounts = accounts.map((acc) =>
+      acc.id === updatedCurrent.id ? updatedCurrent : acc
     );
 
     localStorage.setItem("accounts", JSON.stringify(updatedAccounts));
 
-    // update UI instantly
-    setUser(prev => ({ ...prev, isPublic: !prev.isPublic }));
+    if (isEditMode) {
+      const updatedUser = updatedProfiles.find(
+        (p) => String(p.id) === String(id)
+      );
+
+      navigate("/candidate");
+    } else {
+      navigate("/candidate");
+    }
   };
 
-  if (!user) return <p>Loading...</p>;
-
   return (
-    <div style={{ padding: "20px" }}>
-      <button onClick={() => navigate(-1)}>← Back</button>
+    <div style={{ padding: "20px", maxWidth: "700px", margin: "0 auto" }}>
+      <h1>{isEditMode ? "Edit Profile" : "Create Profile"}</h1>
 
-      <h1>{user.name}</h1>
-      <p>{user.role}</p>
-      <p>{user.skills?.join(", ")}</p>
+      <div style={{ display: "grid", gap: "12px" }}>
+        <input
+          name="name"
+          placeholder="Full name"
+          value={form.name}
+          onChange={handleChange}
+        />
 
-      {/* 🔥 LinkedIn */}
-      {user.linkedin && (
-        <p>
-          <a href={user.linkedin} target="_blank" rel="noreferrer">
-            🔗 LinkedIn
-          </a>
-        </p>
-      )}
+        <input
+          name="role"
+          placeholder="Role"
+          value={form.role}
+          onChange={handleChange}
+        />
 
-      {/* 🔥 PUBLIC / PRIVATE BUTTON */}
-      {current?.email === user.email && (
-        <>
-          <button onClick={togglePublic} style={{ marginBottom: "10px" }}>
-            {user.isPublic ? "Make Private" : "Make Public"}
-          </button>
+        <input
+          name="category"
+          placeholder="Category"
+          value={form.category}
+          onChange={handleChange}
+        />
 
-          <p>
-            Status:{" "}
-            <strong style={{ color: user.isPublic ? "green" : "red" }}>
-              {user.isPublic ? "Public" : "Private"}
-            </strong>
-          </p>
-        </>
-      )}
+        <input
+          name="location"
+          placeholder="Location"
+          value={form.location}
+          onChange={handleChange}
+        />
 
-      <h2>GitHub Projects</h2>
+        <input
+          name="education"
+          placeholder="Education"
+          value={form.education}
+          onChange={handleChange}
+        />
 
-      {loading ? (
-        <p>Loading projects...</p>
-      ) : repos.length === 0 ? (
-        <p>No projects found</p>
-      ) : (
-        repos.map(repo => (
-          <div key={repo.id} style={{ marginBottom: "10px" }}>
-            <h3>{repo.name}</h3>
-            <p>{repo.description}</p>
-            <p>⭐ {repo.stargazers_count}</p>
+        <textarea
+          name="summary"
+          placeholder="Professional summary"
+          value={form.summary}
+          onChange={handleChange}
+          rows={4}
+        />
 
-            <a href={repo.html_url} target="_blank" rel="noreferrer">
-              View on GitHub
-            </a>
-          </div>
-        ))
-      )}
+        <input
+          name="skills"
+          placeholder="Skills (comma separated)"
+          value={form.skills}
+          onChange={handleChange}
+        />
+
+        <input
+          name="certifications"
+          placeholder="Certifications (comma separated)"
+          value={form.certifications}
+          onChange={handleChange}
+        />
+
+        <input
+          name="licenses"
+          placeholder="Licenses (comma separated)"
+          value={form.licenses}
+          onChange={handleChange}
+        />
+
+        <input
+          name="linkedin"
+          placeholder="LinkedIn URL"
+          value={form.linkedin}
+          onChange={handleChange}
+        />
+
+        <input
+          name="portfolio"
+          placeholder="Portfolio URL"
+          value={form.portfolio}
+          onChange={handleChange}
+        />
+
+        <input
+          name="github"
+          placeholder="GitHub URL"
+          value={form.github}
+          onChange={handleChange}
+        />
+      </div>
+
+      <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
+        <button onClick={() => navigate(-1)}>Cancel</button>
+      </div>
     </div>
   );
 }
 
-export default Profile;
+export default ResumeForm;
