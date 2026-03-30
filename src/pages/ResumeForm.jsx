@@ -20,7 +20,7 @@ function ResumeForm() {
     licenses: "",
     linkedin: "",
     portfolio: "",
-    github: ""
+    github: "",
   });
 
   const formatUrl = (url) => {
@@ -37,7 +37,7 @@ function ResumeForm() {
   const handleChange = (e) => {
     setForm((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -67,12 +67,16 @@ function ResumeForm() {
         location: profile.location || "",
         education: profile.education || "",
         summary: profile.summary || "",
-        skills: (profile.skills || []).join(", "),
-        certifications: (profile.certifications || []).join(", "),
-        licenses: (profile.licenses || []).join(", "),
+        skills: Array.isArray(profile.skills) ? profile.skills.join(", ") : "",
+        certifications: Array.isArray(profile.certifications)
+          ? profile.certifications.join(", ")
+          : "",
+        licenses: Array.isArray(profile.licenses)
+          ? profile.licenses.join(", ")
+          : "",
         linkedin: profile.linkedin || "",
         portfolio: profile.portfolio || "",
-        github: profile.github || ""
+        github: profile.github || "",
       });
     }
   }, [id, isEditMode, location.state]);
@@ -108,7 +112,7 @@ function ResumeForm() {
               licenses: toArray(form.licenses),
               linkedin: formatUrl(form.linkedin),
               portfolio: formatUrl(form.portfolio),
-              github: formatUrl(form.github)
+              github: formatUrl(form.github),
             }
           : profile
       );
@@ -127,7 +131,7 @@ function ResumeForm() {
         licenses: toArray(form.licenses),
         linkedin: formatUrl(form.linkedin),
         portfolio: formatUrl(form.portfolio),
-        github: formatUrl(form.github)
+        github: formatUrl(form.github),
       };
 
       updatedProfiles = [...(current.profiles || []), newProfile];
@@ -135,7 +139,7 @@ function ResumeForm() {
 
     const updatedCurrent = {
       ...current,
-      profiles: updatedProfiles
+      profiles: updatedProfiles,
     };
 
     localStorage.setItem("currentUser", JSON.stringify(updatedCurrent));
@@ -147,15 +151,7 @@ function ResumeForm() {
 
     localStorage.setItem("accounts", JSON.stringify(updatedAccounts));
 
-    if (isEditMode) {
-      const updatedUser = updatedProfiles.find(
-        (p) => String(p.id) === String(id)
-      );
-
-      navigate("/candidate");
-    } else {
-      navigate("/candidate");
-    }
+    navigate("/candidate");
   };
 
   return (
@@ -251,7 +247,7 @@ function ResumeForm() {
 
       <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
         <button onClick={handleSave}>
-          {isEditMode ? "Update" : "Save"}
+          {isEditMode ? "Update Profile" : "Save Profile"}
         </button>
         <button onClick={() => navigate(-1)}>Cancel</button>
       </div>

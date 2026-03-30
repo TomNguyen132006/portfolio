@@ -123,10 +123,10 @@ function Candidate() {
 
             <button
               onClick={() =>
-                navigate(`/users/${profile.id}`, { state: { user: profile } })
+                navigate(`/hr/view/${profile.id}`, { state: { user: profile } })
               }
             >
-              View Details
+              View Detail
             </button>
 
             <button
@@ -149,6 +149,10 @@ function Candidate() {
       ) : (
         <p>No profiles yet</p>
       )}
+
+
+
+
 
       <h2 style={{ marginTop: "30px" }}>Job Opportunities</h2>
 
