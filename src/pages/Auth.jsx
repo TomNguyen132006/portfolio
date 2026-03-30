@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Auth.css";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({});
   const [error, setError] = useState("");
+  const [roleType, setRoleType] = useState("candidate");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -12,117 +14,145 @@ function Auth() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleRoleSelect = (role) => {
+    setRoleType(role);
+    setForm({ ...form, roleType: role });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const users = JSON.parse(localStorage.getItem("accounts")) || [];
 
-    // 🔥 LOGIN
     if (isLogin) {
-      const user = users.find(u => u.email === form.email);
-
-      if (!user) {
-        setError("Email not found");
-        return;
-      }
-
-      if (user.password !== form.password) {
-        setError("Wrong password");
-        return;
-      }
-
+      const user = users.find((u) => u.email === form.email);
+      if (!user) return setError("Email not found");
+      if (user.password !== form.password) return setError("Wrong password");
       localStorage.setItem("currentUser", JSON.stringify(user));
-
-      // 🔥 redirect based on role
-      if (user.role === "hr") {
-        navigate("/hr");
-      } else {
-        navigate("/candidate");
-      }
-
-    }
-    // 🔥 SIGN UP
-    else {
-      const exists = users.find(u => u.email === form.email);
-
-      if (exists) {
-        setError("Email already exists");
-        return;
-      }
+      if (user.role === "hr") navigate("/hr");
+      else navigate("/candidate");
+    } else {
+      const exists = users.find((u) => u.email === form.email);
+      if (exists) return setError("Email already exists");
 
       const newUser = {
         id: Date.now(),
         email: form.email,
         password: form.password,
-
-        role: form.roleType, // 🔥 candidate or hr (system role)
-
+        role: roleType,
         profiles: [
           {
             id: Date.now(),
             name: form.name,
-            role: form.role, // 🔥 frontend/backend (job role)
-            skills: form.skills?.split(",").map(s => s.trim()) || [],
+            role: form.role,
+            skills: form.skills?.split(",").map((s) => s.trim()) || [],
             github: form.github,
             linkedin: form.linkedin,
-            isPublic: false
-          }
-        ]
+            isPublic: false,
+          },
+        ],
       };
 
       const updated = [...users, newUser];
-
       localStorage.setItem("accounts", JSON.stringify(updated));
       localStorage.setItem("currentUser", JSON.stringify(newUser));
-
-      // 🔥 redirect after signup
-      if (newUser.role === "hr") {
-        navigate("/hr");
-      } else {
-        navigate("/candidate");
-      }
+      if (newUser.role === "hr") navigate("/hr");
+      else navigate("/candidate");
     }
   };
 
+  // mouse glow effect
+  useEffect(() => {
+    const glow = document.getElementById("glow");
+    const moveGlow = (e) => {
+      if (glow) {
+        glow.style.left = e.clientX + "px";
+        glow.style.top = e.clientY + "px";
+      }
+    };
+    document.addEventListener("mousemove", moveGlow);
+    return () => document.removeEventListener("mousemove", moveGlow);
+  }, []);
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>{isLogin ? "Login" : "Sign Up"}</h1>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>{isLogin ? "Login" : "Sign Up"}</h1>
+        <form onSubmit={handleSubmit}>
+          <input
+            name="email"
+            placeholder="Email"
+            onChange={handleChange}
+            type="email"
+            required
+          />
+          <input
+            name="password"
+            placeholder="Password"
+            onChange={handleChange}
+            type="password"
+            required
+          />
 
-      <form onSubmit={handleSubmit}>
-        <input name="email" placeholder="Email" onChange={handleChange} />
-        <input name="password" placeholder="Password" onChange={handleChange} />
+          {!isLogin && (
+            <>
+              <div className="role-toggle">
+                <div
+                  className={roleType === "candidate" ? "active" : ""}
+                  onClick={() => handleRoleSelect("candidate")}
+                >
+                  Candidate
+                </div>
+                <div
+                  className={roleType === "hr" ? "active" : ""}
+                  onClick={() => handleRoleSelect("hr")}
+                >
+                  HR
+                </div>
+              </div>
+              <input
+                name="name"
+                placeholder="Name"
+                onChange={handleChange}
+                required
+              />
+              <input
+                name="role"
+                placeholder="Job Role (Frontend/Backend)"
+                onChange={handleChange}
+              />
+              <input
+                name="skills"
+                placeholder="Skills (comma separated)"
+                onChange={handleChange}
+              />
+              <input
+                name="github"
+                placeholder="GitHub URL"
+                onChange={handleChange}
+              />
+              <input
+                name="linkedin"
+                placeholder="LinkedIn URL"
+                onChange={handleChange}
+              />
+            </>
+          )}
 
-        {!isLogin && (
-          <>
-            {/* 🔥 ROLE SELECT */}
-            <select name="roleType" onChange={handleChange}>
-              <option value="candidate">Candidate</option>
-              <option value="hr">HR</option>
-            </select>
+          <button className="submit-btn" type="submit">
+            {isLogin ? "Login" : "Create Account"}
+          </button>
 
-            <input name="name" placeholder="Name" onChange={handleChange} />
-            <input name="role" placeholder="Role" onChange={handleChange} />
-            <input name="skills" placeholder="Skills" onChange={handleChange} />
-            <input name="github" placeholder="GitHub" onChange={handleChange} />
-            <input name="linkedin" placeholder="LinkedIn" onChange={handleChange} />
-          </>
-        )}
+          {error && <p className="error-msg">{error}</p>}
+        </form>
 
-        <button type="submit">
-          {isLogin ? "Login" : "Create Account"}
+        <button
+          className="switch-btn"
+          onClick={() => setIsLogin(!isLogin)}
+        >
+          Switch to {isLogin ? "Sign Up" : "Login"}
         </button>
-
-        {/* 🔥 ERROR MESSAGE */}
-        {error && (
-          <p style={{ color: "red", marginTop: "10px" }}>
-            {error}
-          </p>
-        )}
-      </form>
-
-      <button onClick={() => setIsLogin(!isLogin)}>
-        Switch to {isLogin ? "Sign Up" : "Login"}
-      </button>
+      </div>
+      <div className="auth-glow" id="glow"></div>
     </div>
   );
 }
