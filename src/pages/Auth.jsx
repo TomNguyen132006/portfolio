@@ -27,7 +27,9 @@ function Auth() {
       const user = users.find((u) => u.email === form.email);
       if (!user) return setError("Email not found");
       if (user.password !== form.password) return setError("Wrong password");
+
       localStorage.setItem("currentUser", JSON.stringify(user));
+
       if (user.role === "hr") navigate("/hr");
       else navigate("/candidate");
     } else {
@@ -55,28 +57,55 @@ function Auth() {
       const updated = [...users, newUser];
       localStorage.setItem("accounts", JSON.stringify(updated));
       localStorage.setItem("currentUser", JSON.stringify(newUser));
+
       if (newUser.role === "hr") navigate("/hr");
       else navigate("/candidate");
     }
   };
 
-  // mouse glow effect
   useEffect(() => {
     const glow = document.getElementById("glow");
+
     const moveGlow = (e) => {
       if (glow) {
         glow.style.left = e.clientX + "px";
         glow.style.top = e.clientY + "px";
       }
     };
+
     document.addEventListener("mousemove", moveGlow);
     return () => document.removeEventListener("mousemove", moveGlow);
   }, []);
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      <div className={`auth-card ${!isLogin ? "active" : ""}`}>
         <h1>{isLogin ? "Login" : "Sign Up"}</h1>
+
+        <div className="auth-mode-toggle">
+          <button
+            type="button"
+            className={isLogin ? "active-tab" : ""}
+            onClick={() => {
+              setIsLogin(true);
+              setError("");
+            }}
+          >
+            Login
+          </button>
+
+          <button
+            type="button"
+            className={!isLogin ? "active-tab" : ""}
+            onClick={() => {
+              setIsLogin(false);
+              setError("");
+            }}
+          >
+            Register
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit}>
           <input
             name="email"
@@ -85,6 +114,7 @@ function Auth() {
             type="email"
             required
           />
+
           <input
             name="password"
             placeholder="Password"
@@ -109,27 +139,32 @@ function Auth() {
                   HR
                 </div>
               </div>
+
               <input
                 name="name"
                 placeholder="Name"
                 onChange={handleChange}
                 required
               />
+
               <input
                 name="role"
                 placeholder="Job Role (Frontend/Backend)"
                 onChange={handleChange}
               />
+
               <input
                 name="skills"
                 placeholder="Skills (comma separated)"
                 onChange={handleChange}
               />
+
               <input
                 name="github"
                 placeholder="GitHub URL"
                 onChange={handleChange}
               />
+
               <input
                 name="linkedin"
                 placeholder="LinkedIn URL"
@@ -145,13 +180,9 @@ function Auth() {
           {error && <p className="error-msg">{error}</p>}
         </form>
 
-        <button
-          className="switch-btn"
-          onClick={() => setIsLogin(!isLogin)}
-        >
-          Switch to {isLogin ? "Sign Up" : "Login"}
-        </button>
+    
       </div>
+
       <div className="auth-glow" id="glow"></div>
     </div>
   );

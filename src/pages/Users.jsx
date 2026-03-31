@@ -12,34 +12,44 @@ function Users() {
 
     if (!current) {
       window.location.href = "/auth";
+      return;
     }
   }, []);
 
-  // ✅ LOAD ONLY (no saving here)
   useEffect(() => {
     const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
-    setUsers(accounts);
+
+    // only keep candidate users
+    const candidatesOnly = accounts.filter(
+      (user) => user.role === "candidate"
+    );
+
+    setUsers(candidatesOnly);
   }, []);
 
   const allSkills = useMemo(() => {
     const skills = new Set();
-    users.forEach(user => {
-      user.skills.forEach(skill => skills.add(skill));
+
+    users.forEach((user) => {
+      (user.skills || []).forEach((skill) => skills.add(skill));
     });
+
     return ["All", ...skills];
   }, [users]);
 
   const filteredUsers = useMemo(() => {
-    return users.filter(user => {
+    return users.filter((user) => {
+      const name = (user.name || "").toLowerCase();
+      const role = (user.role || "").toLowerCase();
+      const skills = user.skills || [];
+
       const matchSearch =
-        user.name.toLowerCase().includes(search) ||
-        user.skills.some(skill =>
-          skill.toLowerCase().includes(search)
-        );
+        name.includes(search) ||
+        role.includes(search) ||
+        skills.some((skill) => skill.toLowerCase().includes(search));
 
       const matchFilter =
-        selectedSkill === "All" ||
-        user.skills.includes(selectedSkill);
+        selectedSkill === "All" || skills.includes(selectedSkill);
 
       return matchSearch && matchFilter;
     });
@@ -61,26 +71,32 @@ function Users() {
 
       <AddUser users={users} setUsers={setUsers} />
 
-      <input
-        placeholder="Search..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value.toLowerCase())}
-      />
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value.toLowerCase())}
+          style={{ marginRight: "10px", padding: "8px" }}
+        />
 
-      <select
-        value={selectedSkill}
-        onChange={(e) => setSelectedSkill(e.target.value)}
-      >
-        {allSkills.map(skill => (
-          <option key={skill}>{skill}</option>
-        ))}
-      </select>
+        <select
+          value={selectedSkill}
+          onChange={(e) => setSelectedSkill(e.target.value)}
+          style={{ padding: "8px" }}
+        >
+          {allSkills.map((skill) => (
+            <option key={skill} value={skill}>
+              {skill}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div style={{ marginTop: "20px" }}>
         {filteredUsers.length === 0 ? (
           <p>No candidates yet</p>
         ) : (
-          filteredUsers.map(user => (
+          filteredUsers.map((user) => (
             <Link
               key={user.id}
               to={`/users/${user.id}`}
@@ -91,16 +107,21 @@ function Users() {
                 style={{
                   border: "1px solid #ccc",
                   padding: "10px",
-                  marginBottom: "10px"
+                  marginBottom: "10px",
                 }}
               >
-                <h3>{user.name}</h3>
-                <p>{user.role}</p>
-                <p>{user.skills.join(", ")}</p>
+                <h3>{user.name || "No name"}</h3>
+                <p>{user.role || "No role"}</p>
+                <p>{(user.skills || []).join(", ") || "No skills listed"}</p>
 
                 {user.linkedin && (
                   <p>
-                    <a href={user.linkedin} target="_blank" rel="noreferrer">
+                    <a
+                      href={user.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       LinkedIn
                     </a>
                   </p>
