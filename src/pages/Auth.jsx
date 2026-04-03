@@ -79,108 +79,115 @@ function Auth() {
 
   return (
     <div className="auth-container">
-      <div className={`auth-card ${!isLogin ? "active" : ""}`}>
-        <h1>{isLogin ? "Login" : "Sign Up"}</h1>
-
-        <div className="auth-mode-toggle">
-          <button
-            type="button"
-            className={isLogin ? "active-tab" : ""}
-            onClick={() => {
-              setIsLogin(true);
-              setError("");
-            }}
-          >
-            Login
-          </button>
-
-          <button
-            type="button"
-            className={!isLogin ? "active-tab" : ""}
-            onClick={() => {
-              setIsLogin(false);
-              setError("");
-            }}
-          >
-            Register
-          </button>
+      <div className={`auth-wrapper ${!isLogin ? "active" : ""}`}>
+        {/* LOGIN FORM */}
+        <div className="form-section sign-in">
+          <h1>Login</h1>
+          <form onSubmit={handleSubmit}>
+            <input
+              name="email"
+              placeholder="Email"
+              onChange={handleChange}
+              type="email"
+              required
+            />
+            <input
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              type="password"
+              required
+            />
+            <button className="submit-btn" type="submit">
+              Login
+            </button>
+            {error && <p className="error-msg">{error}</p>}
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            name="email"
-            placeholder="Email"
-            onChange={handleChange}
-            type="email"
-            required
-          />
-
-          <input
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            type="password"
-            required
-          />
-
-          {!isLogin && (
-            <>
-              <div className="role-toggle">
-                <div
-                  className={roleType === "candidate" ? "active" : ""}
-                  onClick={() => handleRoleSelect("candidate")}
-                >
-                  Candidate
-                </div>
-                <div
-                  className={roleType === "hr" ? "active" : ""}
-                  onClick={() => handleRoleSelect("hr")}
-                >
-                  HR
-                </div>
+        {/* SIGNUP FORM */}
+        <div className="form-section sign-up">
+          <h1>Sign Up</h1>
+          <form onSubmit={handleSubmit}>
+            <input
+              name="email"
+              placeholder="Email"
+              onChange={handleChange}
+              type="email"
+              required
+            />
+            <input
+              name="password"
+              placeholder="Password"
+              onChange={handleChange}
+              type="password"
+              required
+            />
+            <div className="role-toggle">
+              <div
+                className={roleType === "candidate" ? "active" : ""}
+                onClick={() => handleRoleSelect("candidate")}
+              >
+                Candidate
               </div>
+              <div
+                className={roleType === "hr" ? "active" : ""}
+                onClick={() => handleRoleSelect("hr")}
+              >
+                HR
+              </div>
+            </div>
+            <input
+              name="name"
+              placeholder="Name"
+              onChange={handleChange}
+              required
+            />
+            <input
+              name="role"
+              placeholder="Job Role (Frontend/Backend)"
+              onChange={handleChange}
+            />
+            <input
+              name="skills"
+              placeholder="Skills (comma separated)"
+              onChange={handleChange}
+            />
+            <input
+              name="github"
+              placeholder="GitHub URL"
+              onChange={handleChange}
+            />
+            <input
+              name="linkedin"
+              placeholder="LinkedIn URL"
+              onChange={handleChange}
+            />
+            <button className="submit-btn" type="submit">
+              Create Account
+            </button>
+            {error && <p className="error-msg">{error}</p>}
+          </form>
+        </div>
 
-              <input
-                name="name"
-                placeholder="Name"
-                onChange={handleChange}
-                required
-              />
-
-              <input
-                name="role"
-                placeholder="Job Role (Frontend/Backend)"
-                onChange={handleChange}
-              />
-
-              <input
-                name="skills"
-                placeholder="Skills (comma separated)"
-                onChange={handleChange}
-              />
-
-              <input
-                name="github"
-                placeholder="GitHub URL"
-                onChange={handleChange}
-              />
-
-              <input
-                name="linkedin"
-                placeholder="LinkedIn URL"
-                onChange={handleChange}
-              />
-            </>
-          )}
-
-          <button className="submit-btn" type="submit">
-            {isLogin ? "Login" : "Create Account"}
-          </button>
-
-          {error && <p className="error-msg">{error}</p>}
-        </form>
-
-    
+        {/* OVERLAY */}
+        <div className="overlay">
+          <div className="overlay-panel">
+            {isLogin ? (
+              <>
+                <h2>New here?</h2>
+                <p>Create an account to start</p>
+                <button onClick={() => setIsLogin(false)}>Sign Up</button>
+              </>
+            ) : (
+              <>
+                <h2>Already have an account?</h2>
+                <p>Login to continue</p>
+                <button onClick={() => setIsLogin(true)}>Login</button>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="auth-glow" id="glow"></div>
