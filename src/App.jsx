@@ -8,6 +8,8 @@ import ResumeForm from "./pages/ResumeForm";
 import Favorites from "./pages/Favorites";
 import Compare from "./pages/Compare";
 import HRview from "./pages/HR-view";
+import JobDetail from "./pages/JobDetail";
+import JobEdit from "./pages/JobEdit";
 
 function App() {
   return (
@@ -38,6 +40,8 @@ function App() {
         <Route path="/candidate/edit/:id" element={<ResumeForm />} />
 
         <Route path="/hr/view/:id" element={<HRview />} />
+        <Route path="/job/view/:id" element={<JobDetail />} />
+        <Route path="/job/edit/:id" element={<JobEdit />} />
 
         
 
