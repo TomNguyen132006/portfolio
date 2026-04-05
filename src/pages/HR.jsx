@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ChatPopup from "./ChatPopup";
 
 function HR() {
   const navigate = useNavigate();
@@ -10,10 +11,26 @@ function HR() {
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState("All");
   const [favorites, setFavorites] = useState([]);
+  const [current, setCurrent] = useState(null);
+
+  const [postedJobs, setPostedJobs] = useState([]);
+  const [jobForm, setJobForm] = useState({
+    title: "",
+    company_name: "",
+    location: "",
+    type: "Full-time",
+    description: "",
+    url: "",
+  });
+
+
 
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(favs);
+
+    const savedJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
+    setPostedJobs(savedJobs);
   }, []);
 
   useEffect(() => {
@@ -24,6 +41,8 @@ function HR() {
       return;
     }
 
+    setCurrent(currentUser);
+
     const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
 
     const candidateProfiles = accounts
@@ -32,6 +51,16 @@ function HR() {
 
     setCandidates(candidateProfiles);
   }, [navigate]);
+
+  const chatUsers = useMemo(() => {
+    const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
+
+    return accounts.map((acc) => ({
+      id: acc.id,
+      name: acc.profiles?.[0]?.name || acc.email || "No name",
+      email: acc.email || "",
+    }));
+  }, []);
 
   useEffect(() => {
     const fetchRepos = async () => {
@@ -82,6 +111,8 @@ function HR() {
     }
   }, [candidates]);
 
+
+
   const filteredCandidates = useMemo(() => {
     const keyword = search.toLowerCase().trim();
 
@@ -123,6 +154,7 @@ function HR() {
     localStorage.removeItem("currentUser");
     navigate("/auth");
   };
+
   const toggleFavorite = (id) => {
     let updated;
 
@@ -135,6 +167,52 @@ function HR() {
     setFavorites(updated);
     localStorage.setItem("favorites", JSON.stringify(updated));
   };
+
+  const handleJobChange = (e) => {
+    setJobForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handlePostJob = () => {
+    if (!jobForm.title.trim() || !jobForm.company_name.trim()) {
+      alert("Job title and company are required.");
+      return;
+    }
+
+    const newJob = {
+      id: Date.now(),
+      title: jobForm.title.trim(),
+      company_name: jobForm.company_name.trim(),
+      location: jobForm.location.trim(),
+      type: jobForm.type,
+      description: jobForm.description.trim(),
+      url: jobForm.url.trim(),
+      source: "HR Posting",
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedJobs = [newJob, ...postedJobs];
+    setPostedJobs(updatedJobs);
+    localStorage.setItem("postedJobs", JSON.stringify(updatedJobs));
+
+    setJobForm({
+      title: "",
+      company_name: "",
+      location: "",
+      type: "Full-time",
+      description: "",
+      url: "",
+    });
+  };
+
+  const deletePostedJob = (jobId) => {
+    const updatedJobs = postedJobs.filter((job) => job.id !== jobId);
+    setPostedJobs(updatedJobs);
+    localStorage.setItem("postedJobs", JSON.stringify(updatedJobs));
+  };
+
   return (
     <div style={{ padding: "20px" }}>
       <h1>HR Dashboard</h1>
@@ -142,6 +220,123 @@ function HR() {
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <button onClick={handleLogout}>Logout</button>
         <button onClick={() => navigate("/favorites")}>⭐ Favorites</button>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid #ccc",
+          padding: "16px",
+          borderRadius: "10px",
+          marginBottom: "24px",
+          background: "#fff",
+        }}
+      >
+        <h2>Post a Job</h2>
+
+        <div style={{ display: "grid", gap: "10px", maxWidth: "700px" }}>
+          <input
+            name="title"
+            placeholder="Job Title"
+            value={jobForm.title}
+            onChange={handleJobChange}
+          />
+
+          <input
+            name="company_name"
+            placeholder="Company Name"
+            value={jobForm.company_name}
+            onChange={handleJobChange}
+          />
+
+          <input
+            name="location"
+            placeholder="Location"
+            value={jobForm.location}
+            onChange={handleJobChange}
+          />
+
+          <select
+            name="type"
+            value={jobForm.type}
+            onChange={handleJobChange}
+          >
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Intern">Intern</option>
+          </select>
+
+          <textarea
+            name="description"
+            placeholder="Job Description"
+            value={jobForm.description}
+            onChange={handleJobChange}
+            rows={4}
+          />
+
+          <input
+            name="url"
+            placeholder="Apply Link (optional)"
+            value={jobForm.url}
+            onChange={handleJobChange}
+          />
+
+          <button onClick={handlePostJob}>Post Job</button>
+        </div>
+
+        <div style={{ marginTop: "20px" }}>
+          <h3>My Posted Jobs</h3>
+
+          {postedJobs.length === 0 ? (
+            <p>No jobs posted yet.</p>
+          ) : (
+            <div style={{ display: "grid", gap: "12px" }}>
+              {postedJobs.map((job) => (
+                <div
+                  key={job.id}
+                  style={{
+                    border: "1px solid #ccc",
+                    padding: "12px",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <h4>{job.title}</h4>
+                  <p>
+                    <strong>Company:</strong> {job.company_name}
+                  </p>
+                  <p>
+                    <strong>Location:</strong> {job.location || "N/A"}
+                  </p>
+                  <p>
+                    <strong>Type:</strong> {job.type}
+                  </p>
+                  {job.description && <p>{job.description}</p>}
+
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button onClick={() => deletePostedJob(job.id)}>
+                      Delete Job
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/job/view/${job.id}`, { state: { job } })
+                      }
+                    >
+                      View Detail
+                    </button>
+                    <button
+                      onClick={() =>
+                        navigate(`/job/edit/${job.id}`, { state: { job } })
+                      }
+                    >
+                      Edit
+                    </button>
+
+
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
@@ -242,8 +437,18 @@ function HR() {
           ))}
         </div>
       )}
+
+      <ChatPopup
+        currentUser={{
+          id: current?.id,
+          name: current?.profiles?.[0]?.name?.trim() || current?.email || "No name",
+        }}
+        users={chatUsers}
+      />
     </div>
   );
 }
+
+
 
 export default HR;
