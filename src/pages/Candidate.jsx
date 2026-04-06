@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ChatPopup from "./ChatPopup";
-
+import "./Main.css";
 function Candidate() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState(
