@@ -1,20 +1,18 @@
+// src/pages/Favorites.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Main.css";
 
 function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [repoMap, setRepoMap] = useState({});
   const [loadingMap, setLoadingMap] = useState({});
-
   const navigate = useNavigate();
 
   useEffect(() => {
-    const favs = JSON.parse(localStorage.getItem("favorites")) || [];
-    setFavorites(favs);
-
-    const data = JSON.parse(localStorage.getItem("accounts")) || [];
-    setAccounts(data);
+    setFavorites(JSON.parse(localStorage.getItem("favorites")) || []);
+    setAccounts(JSON.parse(localStorage.getItem("accounts")) || []);
   }, []);
 
   const favoriteProfiles = useMemo(() => {
@@ -25,140 +23,160 @@ function Favorites() {
   }, [accounts, favorites]);
 
   const toggleFavorite = (profileId) => {
-    const updatedFavorites = favorites.filter((id) => id !== profileId);
-    setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
+    const updated = favorites.filter((id) => id !== profileId);
+    setFavorites(updated);
+    localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
   useEffect(() => {
     const fetchRepos = async () => {
       const newRepoMap = {};
-
       for (const profile of favoriteProfiles) {
         if (!profile.github) continue;
-
         const match = profile.github.match(/github\.com\/([^/?#]+)/i);
         const username = match?.[1];
-
         if (!username) continue;
-
         setLoadingMap((prev) => ({ ...prev, [profile.id]: true }));
-
         try {
-          const response = await fetch(
-            `https://api.github.com/users/${username}/repos`
-          );
-          const repos = await response.json();
-
-          if (Array.isArray(repos)) {
-            newRepoMap[profile.id] = repos
-              .filter((repo) => !repo.fork)
-              .slice(0, 3);
-          } else {
-            newRepoMap[profile.id] = [];
-          }
-        } catch (error) {
+          const res = await fetch(`https://api.github.com/users/${username}/repos`);
+          const repos = await res.json();
+          newRepoMap[profile.id] = Array.isArray(repos)
+            ? repos.filter((r) => !r.fork).slice(0, 3)
+            : [];
+        } catch {
           newRepoMap[profile.id] = [];
         }
-
         setLoadingMap((prev) => ({ ...prev, [profile.id]: false }));
       }
-
       setRepoMap(newRepoMap);
     };
-
-    if (favoriteProfiles.length > 0) {
-      fetchRepos();
-    }
+    if (favoriteProfiles.length > 0) fetchRepos();
   }, [favoriteProfiles]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>⭐ Favorite Candidates</h1>
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
 
-      <button
-        onClick={() => navigate("/hr")}
-        style={{ marginBottom: "20px" }}
-      >
-        ← Back to HR
-      </button>
+      {/* ── Navbar ── */}
+      <nav className="navbar">
+        <span className="navbar-logo">PortfolioHub</span>
+        <div className="navbar-right">
+          <button className="btn" onClick={() => navigate("/hr")}>
+            ← Back to Dashboard
+          </button>
+        </div>
+      </nav>
 
-      <div style={{ marginTop: "20px" }}>
+      <div className="page">
+
+        {/* ── Header ── */}
+        <div style={{ marginBottom: "2.5rem" }}>
+          <p className="section-subtitle">HR Dashboard</p>
+          <h1 style={{ fontFamily: "var(--font-head)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.01em" }}>
+            Saved Candidates
+          </h1>
+          {favoriteProfiles.length > 0 && (
+            <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "6px" }}>
+              {favoriteProfiles.length} candidate{favoriteProfiles.length !== 1 ? "s" : ""} saved
+            </p>
+          )}
+        </div>
+
+        {/* ── Empty state ── */}
         {favoriteProfiles.length === 0 ? (
-          <p>No favorites yet</p>
+          <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
+            <p style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>⭐</p>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1.2rem" }}>
+              No saved candidates yet. Go back to the dashboard and star candidates you like.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate("/hr")}>
+              Browse Candidates
+            </button>
+          </div>
         ) : (
-          favoriteProfiles.map((profile) => (
-            <div
-              key={profile.id}
-              style={{
-                border: "1px solid #ccc",
-                padding: "15px",
-                marginBottom: "15px",
-              }}
-            >
-              <h3>{profile.name || "No name"}</h3>
-              <p>{profile.role || "No role"}</p>
-              <p>{(profile.skills || []).join(", ") || "No skills listed"}</p>
-
+          <div className="grid-candidates">
+            {favoriteProfiles.map((profile, i) => (
               <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  flexWrap: "wrap",
-                  marginBottom: "15px",
-                }}
+                key={profile.id}
+                className="card fade-up"
+                style={{ animationDelay: `${i * 0.05}s` }}
               >
-                <button
-                  onClick={() =>
-                    navigate(`/hr/view/${profile.id}`, {
-                      state: { user: profile },
-                    })
-                  }
-                >
-                  View Detail
-                </button>
-
-                <button onClick={() => toggleFavorite(profile.id)}>
-                  💔 Remove Favorite
-                </button>
-
-                {profile.linkedin && (
-                  <button
-                    onClick={() => window.open(profile.linkedin, "_blank")}
-                  >
-                    LinkedIn
-                  </button>
-                )}
-
-                {profile.github && (
-                  <button
-                    onClick={() => window.open(profile.github, "_blank")}
-                  >
-                    GitHub
-                  </button>
-                )}
-              </div>
-
-              <h4>Projects</h4>
-
-              {loadingMap[profile.id] ? (
-                <p>Loading...</p>
-              ) : !repoMap[profile.id] || repoMap[profile.id].length === 0 ? (
-                <p>No projects</p>
-              ) : (
-                repoMap[profile.id].map((repo) => (
-                  <div key={repo.id} style={{ marginBottom: "12px" }}>
-                    <strong>{repo.name}</strong>
-                    <p>{repo.description || "No description"}</p>
-
-                    <button onClick={() => window.open(repo.html_url, "_blank")}>
-                      🚀 View Project
-                    </button>
+                {/* ── Card header ── */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
+                  <div>
+                    <p className="candidate-name">{profile.name || "No Name"}</p>
+                    <p className="candidate-role">{profile.role || "—"}</p>
                   </div>
-                ))
-              )}
-            </div>
-          ))
+                  <button
+                    className="btn-fav active"
+                    onClick={() => toggleFavorite(profile.id)}
+                    title="Remove from favorites"
+                  >
+                    💖
+                  </button>
+                </div>
+
+                {/* ── Skills ── */}
+                {Array.isArray(profile.skills) && profile.skills.length > 0 && (
+                  <div style={{ marginBottom: "1rem" }}>
+                    {profile.skills.slice(0, 5).map((skill) => (
+                      <span key={skill} className="tag">{skill}</span>
+                    ))}
+                    {profile.skills.length > 5 && (
+                      <span className="tag" style={{ opacity: 0.5 }}>
+                        +{profile.skills.length - 5}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Actions ── */}
+                <div className="candidate-actions">
+                  <button
+                    className="btn btn-primary"
+                    style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                    onClick={() => navigate(`/hr/view/${profile.id}`, { state: { user: profile } })}
+                  >
+                    View Profile
+                  </button>
+                  {profile.github && (
+                    <a href={profile.github} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                      <button className="btn" style={{ fontSize: "0.7rem", padding: "6px 14px" }}>
+                        GitHub ↗
+                      </button>
+                    </a>
+                  )}
+                  {profile.linkedin && (
+                    <a href={profile.linkedin} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+                      <button className="btn" style={{ fontSize: "0.7rem", padding: "6px 14px" }}>
+                        LinkedIn ↗
+                      </button>
+                    </a>
+                  )}
+                </div>
+
+                {/* ── GitHub Repos ── */}
+                <div className="repo-section">
+                  <p className="repo-label">GitHub Projects</p>
+                  {loadingMap[profile.id] ? (
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>Fetching repos...</p>
+                  ) : !repoMap[profile.id] || repoMap[profile.id].length === 0 ? (
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}>No public repos found</p>
+                  ) : (
+                    repoMap[profile.id].map((repo) => (
+                      <div key={repo.id} className="repo-item">
+                        <p className="repo-name">{repo.name}</p>
+                        <p className="repo-desc">{repo.description || "No description"}</p>
+                        <a href={repo.html_url} target="_blank" rel="noreferrer" className="repo-link">
+                          View on GitHub ↗
+                        </a>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
