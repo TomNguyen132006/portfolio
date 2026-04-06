@@ -33,7 +33,6 @@ function HRview() {
     { label: "Category",       value: candidate.category },
     { label: "Location",       value: candidate.location },
     { label: "Education",      value: candidate.education },
-    { label: "Summary",        value: candidate.summary },
     { label: "Certifications", value: Array.isArray(candidate.certifications) ? candidate.certifications.join(", ") : candidate.certifications },
     { label: "Licenses",       value: Array.isArray(candidate.licenses) ? candidate.licenses.join(", ") : candidate.licenses },
   ];
