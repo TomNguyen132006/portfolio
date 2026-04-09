@@ -19,18 +19,17 @@ function ResumeForm() {
     certifications: "",
     licenses: "",
     linkedin: "",
-    portfolio: "",
     github: "",
+    resumeName: "",
+    resumeFile: "",
   });
 
   const formatUrl = (url) => {
     const trimmed = (url || "").trim();
     if (!trimmed) return "";
-
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
       return trimmed;
     }
-
     return "https://" + trimmed;
   };
 
@@ -38,6 +37,34 @@ function ResumeForm() {
     setForm((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleResumeUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      alert("Please upload a PDF file only.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm((prev) => ({
+        ...prev,
+        resumeName: file.name,
+        resumeFile: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeResume = () => {
+    setForm((prev) => ({
+      ...prev,
+      resumeName: "",
+      resumeFile: "",
     }));
   };
 
@@ -75,8 +102,9 @@ function ResumeForm() {
           ? profile.licenses.join(", ")
           : "",
         linkedin: profile.linkedin || "",
-        portfolio: profile.portfolio || "",
         github: profile.github || "",
+        resumeName: profile.resumeName || "",
+        resumeFile: profile.resumeFile || "",
       });
     }
   }, [id, isEditMode, location.state]);
@@ -111,8 +139,9 @@ function ResumeForm() {
               certifications: toArray(form.certifications),
               licenses: toArray(form.licenses),
               linkedin: formatUrl(form.linkedin),
-              portfolio: formatUrl(form.portfolio),
               github: formatUrl(form.github),
+              resumeName: form.resumeName,
+              resumeFile: form.resumeFile,
             }
           : profile
       );
@@ -130,8 +159,9 @@ function ResumeForm() {
         certifications: toArray(form.certifications),
         licenses: toArray(form.licenses),
         linkedin: formatUrl(form.linkedin),
-        portfolio: formatUrl(form.portfolio),
         github: formatUrl(form.github),
+        resumeName: form.resumeName,
+        resumeFile: form.resumeFile,
       };
 
       updatedProfiles = [...(current.profiles || []), newProfile];
@@ -231,18 +261,42 @@ function ResumeForm() {
         />
 
         <input
-          name="portfolio"
-          placeholder="Portfolio URL"
-          value={form.portfolio}
-          onChange={handleChange}
-        />
-
-        <input
           name="github"
           placeholder="GitHub URL"
           value={form.github}
           onChange={handleChange}
         />
+
+        <div>
+          <label style={{ display: "block", marginBottom: "6px" }}>
+            Upload Resume (PDF)
+          </label>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={handleResumeUpload}
+          />
+        </div>
+
+        {form.resumeFile && (
+          <div style={{ display: "grid", gap: "8px" }}>
+            <p style={{ margin: 0 }}>
+              Uploaded: <strong>{form.resumeName}</strong>
+            </p>
+
+            <iframe
+              src={form.resumeFile}
+              title="Resume Preview"
+              width="100%"
+              height="400px"
+              style={{ border: "1px solid #ccc", borderRadius: "8px" }}
+            />
+
+            <button type="button" onClick={removeResume}>
+              Remove Resume
+            </button>
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: "16px", display: "flex", gap: "10px" }}>
@@ -255,4 +309,4 @@ function ResumeForm() {
   );
 }
 
-export default ResumeForm;  
+export default ResumeForm;
