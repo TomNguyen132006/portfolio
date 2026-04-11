@@ -35,3 +35,22 @@ This project aims to:
 
 ---
 
+## ⚙️ Installation & Setup
+
+Follow these steps to run the project locally:
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/TomNguyen132006/portfolio.git
+cd portfolio
+
+#Install dependencies
+npm install
+
+#Run the development server
+npm run dev
+
+The application runs at `http://localhost:3000`.
+
+
+
