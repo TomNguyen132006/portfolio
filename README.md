@@ -49,7 +49,7 @@ npm install
 
 #Run the development server
 npm run dev
-
+```
 The application runs at `http://localhost:3000`.
 
 
