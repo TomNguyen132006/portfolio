@@ -43,10 +43,14 @@ Follow these steps to run the project locally:
 ```bash
 git clone https://github.com/TomNguyen132006/portfolio.git
 cd portfolio
-
+```
+2. Install dependencies
+```bash
 #Install dependencies
 npm install
-
+```
+3. Run
+```bash
 #Run the development server
 npm run dev
 ```
