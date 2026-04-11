@@ -1,21 +1,37 @@
-<<<<<<< HEAD
-# React + Vite
+# 💼 Personal Portfolio Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack portfolio web application that showcases projects, skills, and experience through an interactive and user-friendly interface.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Project Overview
 
-## React Compiler
+This project is a personal portfolio website designed to present projects, technical skills, and achievements in a clean and professional format.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+It focuses on building a responsive and dynamic web application that allows users to explore projects, view details, and access additional resources such as GitHub links and resumes.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# portfolio
-CSC 365 Final Project
->>>>>>> e921cf3a99119da15a731b0846db90a15f09a75d
+## 💡 Purpose
+
+A portfolio is essential for demonstrating real-world skills beyond a resume.
+
+This project aims to:
+- Showcase technical projects and experience  
+- Provide a centralized place for recruiters to evaluate work  
+- Improve personal branding and online presence  
+
+---
+
+## ⚙️ Tech Stack
+
+| Layer | Technology |
+|------|------------|
+| Frontend | React, Next.js |
+| Language | TypeScript / JavaScript |
+| Styling | Tailwind CSS |
+| Backend | Node.js / API Routes |
+| Database | (if used: Firebase / MongoDB / etc.) |
+
+---
+
