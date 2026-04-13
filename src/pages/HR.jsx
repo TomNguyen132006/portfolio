@@ -20,6 +20,7 @@ function HR() {
     type: "Full-time", description: "", url: "",
   });
   const [showJobForm, setShowJobForm] = useState(false);
+  const [compareList, setCompareList] = useState([]); // 👈 new
 
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites")) || [];
@@ -53,9 +54,8 @@ function HR() {
       const newRepoMap = {};
       for (const candidate of candidates) {
         if (!candidate.github) continue;
-        let username = "";
         const match = candidate.github.trim().match(/github\.com\/([^/?#]+)/i);
-        username = match?.[1] || candidate.github.trim();
+        const username = match?.[1] || candidate.github.trim();
         if (!username) continue;
         setLoadingMap((prev) => ({ ...prev, [candidate.id]: true }));
         try {
@@ -97,6 +97,15 @@ function HR() {
       : [...favorites, id];
     setFavorites(updated);
     localStorage.setItem("favorites", JSON.stringify(updated));
+  };
+
+  // 👇 new
+  const toggleCompare = (candidate) => {
+    setCompareList((prev) =>
+      prev.find((c) => c.id === candidate.id)
+        ? prev.filter((c) => c.id !== candidate.id)
+        : prev.length < 4 ? [...prev, candidate] : prev
+    );
   };
 
   const handleJobChange = (e) =>
@@ -190,7 +199,6 @@ function HR() {
             </div>
           )}
 
-          {/* Posted jobs list */}
           {postedJobs.length > 0 && (
             <div style={{ marginTop: "1.5rem" }}>
               <p className="repo-label">My Posted Jobs ({postedJobs.length})</p>
@@ -199,9 +207,7 @@ function HR() {
                   <div key={job.id} className="card" style={{ padding: "1rem" }}>
                     <p className="job-company">{job.company_name}</p>
                     <p className="job-title">{job.title}</p>
-                    <p className="job-meta">
-                      {job.location || "Remote"} · {job.type}
-                    </p>
+                    <p className="job-meta">{job.location || "Remote"} · {job.type}</p>
                     {job.description && (
                       <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.8rem", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {job.description}
@@ -268,7 +274,12 @@ function HR() {
               <div
                 key={candidate.id}
                 className="card fade-up"
-                style={{ animationDelay: `${i * 0.05}s` }}
+                style={{
+                  animationDelay: `${i * 0.05}s`,
+                  borderTop: compareList.find((c) => c.id === candidate.id)
+                    ? "3px solid var(--accent)"
+                    : "3px solid transparent",
+                }}
               >
                 {/* Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
@@ -306,14 +317,29 @@ function HR() {
                     View Profile
                   </button>
                   {candidate.github && (
-                    <a href={candidate.github} target="_blank" rel="noreferrer"
-                      style={{ textDecoration: "none" }}>
+                    <a href={candidate.github} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
                       <button className="btn" style={{ fontSize: "0.7rem", padding: "6px 14px" }}>
                         GitHub ↗
                       </button>
                     </a>
                   )}
                 </div>
+
+                {/* 👇 Compare checkbox */}
+                <label style={{
+                  display: "flex", alignItems: "center", gap: "6px",
+                  fontSize: "0.75rem", color: "var(--text-muted)",
+                  cursor: "pointer", marginTop: "0.8rem",
+                  paddingTop: "0.8rem", borderTop: "1px solid var(--border)",
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={!!compareList.find((c) => c.id === candidate.id)}
+                    onChange={() => toggleCompare(candidate)}
+                    disabled={!compareList.find((c) => c.id === candidate.id) && compareList.length >= 4}
+                  />
+                  {compareList.find((c) => c.id === candidate.id) ? "Added to compare" : "Add to compare"}
+                </label>
 
                 {/* GitHub Repos */}
                 <div className="repo-section">
@@ -339,6 +365,44 @@ function HR() {
           </div>
         )}
       </div>
+
+      {/* 👇 Floating compare bar */}
+      {compareList.length >= 2 && (
+        <div style={{
+          position: "fixed", bottom: "2rem", left: "50%", transform: "translateX(-50%)",
+          background: "var(--accent)", color: "#fff",
+          padding: "12px 24px", borderRadius: "var(--radius)",
+          boxShadow: "0 8px 32px rgba(30, 58, 95, 0.3)",
+          display: "flex", alignItems: "center", gap: "1.2rem",
+          zIndex: 200, fontFamily: "var(--font-mono)", fontSize: "0.8rem",
+          whiteSpace: "nowrap",
+        }}>
+          <span>{compareList.length} candidates selected</span>
+          <button
+            style={{
+              background: "#fff", color: "var(--accent)", border: "none",
+              borderRadius: "var(--radius-sm)", padding: "6px 16px",
+              fontWeight: 700, cursor: "pointer", fontSize: "0.8rem",
+              fontFamily: "var(--font-mono)",
+            }}
+            onClick={() => navigate("/compare", { state: { selected: compareList } })}
+          >
+            Compare →
+          </button>
+          <button
+            style={{
+              background: "transparent", color: "#fff",
+              border: "1.5px solid rgba(255,255,255,0.4)",
+              borderRadius: "var(--radius-sm)", padding: "6px 12px",
+              cursor: "pointer", fontSize: "0.8rem",
+              fontFamily: "var(--font-mono)",
+            }}
+            onClick={() => setCompareList([])}
+          >
+            Clear
+          </button>
+        </div>
+      )}
 
       <ChatPopup
         currentUser={{
