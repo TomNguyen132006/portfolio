@@ -42,16 +42,15 @@ Follow these steps to run the project locally:
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/TomNguyen132006/portfolio.git
+
 cd portfolio
 ```
 ### 2. Install dependencies
 ```bash
-#Install dependencies
 npm install
 ```
 ### 3. Run
 ```bash
-#Run the development server
 npm run dev
 ```
 The application runs at `http://localhost:3000`.
