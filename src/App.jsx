@@ -10,6 +10,7 @@ import Compare from "./pages/Compare";
 import HRview from "./pages/HR-view";
 import JobDetail from "./pages/JobDetail";
 import JobEdit from "./pages/JobEdit";
+import ProjectDetail from "./pages/ProjectDetail";
 
 function App() {
   return (
@@ -42,10 +43,9 @@ function App() {
         <Route path="/hr/view/:id" element={<HRview />} />
         <Route path="/job/view/:id" element={<JobDetail />} />
         <Route path="/job/edit/:id" element={<JobEdit />} />
+        <Route path="/project/:username/:repoName" element={<ProjectDetail />} />
 
         
-
-        {/* ❌ 404 MUST BE LAST */}
         <Route path="*" element={<h1>Page Not Found</h1>} />
 
       </Routes>

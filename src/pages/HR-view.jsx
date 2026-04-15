@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "./Main.css";
 
@@ -6,18 +7,62 @@ function HRview() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const candidate =
-    location.state?.user ||
-    JSON.parse(localStorage.getItem("accounts"))
-      ?.flatMap((acc) => acc.profiles || [])
-      ?.find((profile) => String(profile.id) === String(id));
+  const accountFromState = location.state?.candidateAccount || null;
+  const profileFromState = location.state?.user || null;
 
-  if (!candidate) {
+  const accountFromStorage = useMemo(() => {
+    const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
+
+    if (accountFromState?.id) {
+      return (
+        accounts.find((acc) => String(acc.id) === String(accountFromState.id)) ||
+        accountFromState
+      );
+    }
+
+    return (
+      accounts.find(
+        (acc) =>
+          acc.role === "candidate" &&
+          Array.isArray(acc.profiles) &&
+          acc.profiles.some((profile) => String(profile.id) === String(id))
+      ) || null
+    );
+  }, [accountFromState, id]);
+
+  const profiles = Array.isArray(accountFromStorage?.profiles)
+    ? accountFromStorage.profiles
+    : [];
+
+  const mainProfile =
+    profiles.find(
+      (profile) =>
+        String(profile.id) === String(accountFromStorage?.primaryProfileId)
+    ) ||
+    profileFromState ||
+    profiles.find((profile) => String(profile.id) === String(id)) ||
+    profiles[0] ||
+    null;
+
+  const [activeProfileId, setActiveProfileId] = useState(
+    mainProfile ? String(mainProfile.id) : ""
+  );
+
+  const activeProfile =
+    profiles.find((profile) => String(profile.id) === String(activeProfileId)) ||
+    mainProfile;
+
+  const otherProfiles = profiles.filter(
+    (profile) => String(profile.id) !== String(activeProfile?.id)
+  );
+
+  if (!activeProfile) {
     return (
       <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
         <nav className="navbar">
           <span className="navbar-logo">PortfolioHub</span>
         </nav>
+
         <div
           className="page"
           style={{
@@ -40,33 +85,37 @@ function HRview() {
   }
 
   const fields = [
-    { label: "Email", value: candidate.email },
-    { label: "Role", value: candidate.role },
-    { label: "Category", value: candidate.category },
-    { label: "Location", value: candidate.location },
-    { label: "Education", value: candidate.education },
+    { label: "Email", value: accountFromStorage?.email || activeProfile.email },
+    { label: "Role", value: activeProfile.role },
+    { label: "Category", value: activeProfile.category },
+    { label: "Location", value: activeProfile.location },
+    { label: "Education", value: activeProfile.education },
     {
       label: "Certifications",
-      value: Array.isArray(candidate.certifications)
-        ? candidate.certifications.join(", ")
-        : candidate.certifications,
+      value: Array.isArray(activeProfile.certifications)
+        ? activeProfile.certifications.join(", ")
+        : activeProfile.certifications,
     },
     {
       label: "Licenses",
-      value: Array.isArray(candidate.licenses)
-        ? candidate.licenses.join(", ")
-        : candidate.licenses,
+      value: Array.isArray(activeProfile.licenses)
+        ? activeProfile.licenses.join(", ")
+        : activeProfile.licenses,
     },
   ];
 
   const links = [
-    { label: "GitHub", href: candidate.github },
-    { label: "LinkedIn", href: candidate.linkedin },
-  ].filter((l) => l.href);
+    { label: "GitHub", href: activeProfile.github },
+    { label: "LinkedIn", href: activeProfile.linkedin },
+  ].filter((link) => link.href);
 
-  const skills = Array.isArray(candidate.skills)
-    ? candidate.skills
-    : candidate.skills?.split(",").map((s) => s.trim()) || [];
+  const skills = Array.isArray(activeProfile.skills)
+    ? activeProfile.skills
+    : activeProfile.skills?.split(",").map((s) => s.trim()) || [];
+
+  const isMainResume =
+    String(activeProfile.id) ===
+    String(accountFromStorage?.primaryProfileId || mainProfile?.id);
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
@@ -79,8 +128,11 @@ function HRview() {
         </div>
       </nav>
 
-      <div className="page" style={{ maxWidth: "800px" }}>
-        <div className="card fade-up" style={{ marginBottom: "1.5rem", padding: "2rem" }}>
+      <div className="page" style={{ maxWidth: "1000px" }}>
+        <div
+          className="card fade-up"
+          style={{ marginBottom: "1.5rem", padding: "2rem" }}
+        >
           <div
             style={{
               display: "flex",
@@ -91,7 +143,9 @@ function HRview() {
             }}
           >
             <div>
-              <p className="section-subtitle">Candidate Profile</p>
+              <p className="section-subtitle">
+                {isMainResume ? "Main Resume" : "Alternate Resume"}
+              </p>
               <h1
                 style={{
                   fontFamily: "var(--font-head)",
@@ -101,30 +155,52 @@ function HRview() {
                   marginBottom: "4px",
                 }}
               >
-                {candidate.name || "No Name"}
+                {activeProfile.name || "No Name"}
               </h1>
-              <p className="candidate-role">{candidate.role || "—"}</p>
+              <p className="candidate-role">{activeProfile.role || "—"}</p>
+
+              {!isMainResume && (
+                <p
+                  style={{
+                    fontSize: "0.78rem",
+                    color: "var(--text-muted)",
+                    marginTop: "0.35rem",
+                  }}
+                >
+                  Viewing one of the candidate’s alternate resumes
+                </p>
+              )}
             </div>
 
-            {links.length > 0 && (
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {links.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ textDecoration: "none" }}
-                  >
-                    <button className="btn" style={{ fontSize: "0.72rem" }}>
-                      {link.label} ↗
-                    </button>
-                  </a>
-                ))}
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {links.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <button className="btn" style={{ fontSize: "0.72rem" }}>
+                    {link.label} ↗
+                  </button>
+                </a>
+              ))}
 
-                
-              </div>
-            )}
+              {!isMainResume && (
+                <button
+                  className="btn btn-primary"
+                  style={{ fontSize: "0.72rem" }}
+                  onClick={() =>
+                    setActiveProfileId(
+                      String(accountFromStorage?.primaryProfileId || mainProfile?.id)
+                    )
+                  }
+                >
+                  Back to Main Resume
+                </button>
+              )}
+            </div>
           </div>
 
           {skills.length > 0 && (
@@ -147,13 +223,105 @@ function HRview() {
           )}
         </div>
 
+        {profiles.length > 1 && (
+          <div
+            className="card fade-up"
+            style={{
+              animationDelay: "0.04s",
+              padding: "2rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "1rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div>
+                <p className="repo-label" style={{ marginBottom: "0.35rem" }}>
+                  Resume Versions
+                </p>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                  This candidate has {profiles.length} total resumes.
+                </p>
+              </div>
+
+              <select
+                className="filter-select"
+                value={String(activeProfile.id)}
+                onChange={(e) => setActiveProfileId(String(e.target.value))}
+              >
+                {profiles.map((profile) => (
+                  <option key={profile.id} value={String(profile.id)}>
+                    {profile.name || "Untitled Resume"} —{" "}
+                    {profile.role || "No role"}
+                    {String(profile.id) ===
+                    String(accountFromStorage?.primaryProfileId || mainProfile?.id)
+                      ? " (Main)"
+                      : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {otherProfiles.length > 0 && (
+              <div>
+                <p
+                  className="repo-label"
+                  style={{ marginBottom: "0.8rem", marginTop: "1rem" }}
+                >
+                  Other Resumes
+                </p>
+
+                <div className="grid-candidates">
+                  {otherProfiles.map((profile) => (
+                    <div key={profile.id} className="repo-item">
+                      <p className="repo-name">{profile.name || "No name"}</p>
+                      <p className="repo-desc">{profile.role || "No role"}</p>
+
+                      {Array.isArray(profile.skills) &&
+                        profile.skills.length > 0 && (
+                          <div style={{ marginBottom: "0.75rem" }}>
+                            {profile.skills.slice(0, 4).map((skill) => (
+                              <span key={skill} className="tag">
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                      <button
+                        className="btn"
+                        style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                        onClick={() => setActiveProfileId(String(profile.id))}
+                      >
+                        View This Resume
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div
           className="card fade-up"
-          style={{ animationDelay: "0.08s", padding: "2rem", marginBottom: "1.5rem" }}
+          style={{
+            animationDelay: "0.08s",
+            padding: "2rem",
+            marginBottom: "1.5rem",
+          }}
         >
           <p className="repo-label" style={{ marginBottom: "1.2rem" }}>
             Details
           </p>
+
           <div
             style={{
               display: "grid",
@@ -175,7 +343,13 @@ function HRview() {
                   >
                     {field.label}
                   </p>
-                  <p style={{ fontSize: "0.85rem", color: "var(--text)", lineHeight: 1.5 }}>
+                  <p
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "var(--text)",
+                      lineHeight: 1.5,
+                    }}
+                  >
                     {field.value}
                   </p>
                 </div>
@@ -184,41 +358,64 @@ function HRview() {
           </div>
         </div>
 
-        {candidate.resumeFile && (
+        {activeProfile.resumeFile && (
           <div
             className="card fade-up"
-            style={{ animationDelay: "0.1s", padding: "2rem", marginBottom: "1.5rem" }}
+            style={{
+              animationDelay: "0.1s",
+              padding: "2rem",
+              marginBottom: "1.5rem",
+            }}
           >
             <p className="repo-label" style={{ marginBottom: "0.8rem" }}>
               Resume
             </p>
 
-            {candidate.resumeName && (
-              <p style={{ fontSize: "0.85rem", marginBottom: "1rem", color: "var(--text-muted)" }}>
-                {candidate.resumeName}
+            {activeProfile.resumeName && (
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  marginBottom: "1rem",
+                  color: "var(--text-muted)",
+                }}
+              >
+                {activeProfile.resumeName}
               </p>
             )}
 
             <iframe
-              src={candidate.resumeFile}
-              title={`resume-${candidate.id}`}
+              src={activeProfile.resumeFile}
+              title={`resume-${activeProfile.id}`}
               width="100%"
               height="600px"
-              style={{ border: "1px solid var(--border)", borderRadius: "12px" }}
+              style={{
+                border: "1px solid var(--border)",
+                borderRadius: "12px",
+              }}
             />
           </div>
         )}
 
-        {candidate.summary && (
+        {activeProfile.summary && (
           <div
             className="card fade-up"
-            style={{ animationDelay: "0.12s", padding: "2rem", marginBottom: "1.5rem" }}
+            style={{
+              animationDelay: "0.12s",
+              padding: "2rem",
+              marginBottom: "1.5rem",
+            }}
           >
             <p className="repo-label" style={{ marginBottom: "0.8rem" }}>
               Summary
             </p>
-            <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-              {candidate.summary}
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--text-muted)",
+                lineHeight: 1.7,
+              }}
+            >
+              {activeProfile.summary}
             </p>
           </div>
         )}

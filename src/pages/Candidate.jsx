@@ -15,7 +15,8 @@ function Candidate() {
   const [selectedRole, setSelectedRole] = useState("All");
   const [searchText, setSearchText] = useState("All");
   const [loadingRecommended, setLoadingRecommended] = useState(true);
-
+  const [primaryProfileId, setPrimaryProfileId] = useState(null);
+  const [viewedProfileId, setViewedProfileId] = useState(null);
   const [repoMap, setRepoMap] = useState({});
   const [loadingMap, setLoadingMap] = useState({});
 
@@ -29,10 +30,18 @@ function Candidate() {
 
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem("currentUser"));
+
     if (!savedUser || savedUser.role !== "candidate") {
       navigate("/auth");
       return;
     }
+
+    const initialPrimaryId =
+      savedUser?.primaryProfileId || savedUser?.profiles?.[0]?.id || null;
+
+    setPrimaryProfileId(String(initialPrimaryId));
+    setViewedProfileId(String(initialPrimaryId));
+
     setCurrent(savedUser);
     setPostedJobs(JSON.parse(localStorage.getItem("postedJobs")) || []);
   }, [navigate]);
@@ -56,9 +65,8 @@ function Candidate() {
       for (const profile of current?.profiles || []) {
         if (!profile.github) continue;
 
-        let username = "";
         const match = profile.github.trim().match(/github\.com\/([^/?#]+)/i);
-        username = match?.[1] || profile.github.trim();
+        const username = match?.[1] || profile.github.trim();
 
         if (!username) continue;
 
@@ -88,14 +96,14 @@ function Candidate() {
     }
   }, [current]);
 
-  const deleteResume = (profileId) => {
+  const handlePrimaryChange = (profileId) => {
     const savedUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!savedUser) return;
 
-    const updatedProfiles = (savedUser.profiles || []).filter(
-      (p) => p.id !== profileId
-    );
-    const updatedUser = { ...savedUser, profiles: updatedProfiles };
+    const updatedUser = {
+      ...savedUser,
+      primaryProfileId: profileId,
+    };
 
     localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
@@ -105,6 +113,37 @@ function Candidate() {
     localStorage.setItem("accounts", JSON.stringify(updatedAccounts));
 
     setCurrent(updatedUser);
+    setPrimaryProfileId(profileId);
+  };
+
+  const deleteResume = (profileId) => {
+    const savedUser = JSON.parse(localStorage.getItem("currentUser"));
+    if (!savedUser) return;
+
+    const updatedProfiles = (savedUser.profiles || []).filter(
+      (p) => p.id !== profileId
+    );
+
+    const newPrimaryId =
+      savedUser.primaryProfileId === profileId
+        ? updatedProfiles[0]?.id || null
+        : savedUser.primaryProfileId;
+
+    const updatedUser = {
+      ...savedUser,
+      profiles: updatedProfiles,
+      primaryProfileId: newPrimaryId,
+    };
+
+    localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+    const updatedAccounts = accounts.map((acc) =>
+      acc.id === updatedUser.id ? updatedUser : acc
+    );
+    localStorage.setItem("accounts", JSON.stringify(updatedAccounts));
+
+    setCurrent(updatedUser);
+    setPrimaryProfileId(newPrimaryId);
   };
 
   const getJobType = (job = "") => {
@@ -117,29 +156,40 @@ function Candidate() {
 
   const getRole = (title = "") => {
     const t = title.toLowerCase();
+
     if (
       t.includes("software engineer") ||
       t.includes("software developer") ||
       t.includes("frontend") ||
       t.includes("backend") ||
       t.includes("full stack")
-    )
+    ) {
       return "Software Developer";
-    if (t.includes("data") || t.includes("analytics") || t.includes("analyst"))
+    }
+
+    if (t.includes("data") || t.includes("analytics") || t.includes("analyst")) {
       return "Data Analyst";
+    }
+
     if (
       t.includes("accounting") ||
       t.includes("accountant") ||
       t.includes("finance")
-    )
+    ) {
       return "Accountant";
-    if (t.includes("sales") || t.includes("business development"))
+    }
+
+    if (t.includes("sales") || t.includes("business development")) {
       return "Sales";
+    }
+
     if (t.includes("marketing")) return "Marketing";
     if (t.includes("product")) return "Product";
-    if (t.includes("design") || t.includes("ui") || t.includes("ux"))
+    if (t.includes("design") || t.includes("ui") || t.includes("ux")) {
       return "Designer";
+    }
     if (t.includes("research")) return "Research";
+
     return "Other";
   };
 
@@ -151,13 +201,16 @@ function Candidate() {
     return ["All", ...Array.from(roles).sort()];
   }, [postedJobs, recommendedJobs]);
 
-  const candidateKeywords = useMemo(() => {
-    const p = current?.profiles?.[0];
-    if (!p) return [];
-    return [p.role || "", ...(Array.isArray(p.skills) ? p.skills : [])]
-      .map((s) => s.toLowerCase().trim())
-      .filter(Boolean);
-  }, [current]);
+  const selectedProfile =
+    current?.profiles?.find((p) => String(p.id) === String(viewedProfileId)) ||
+    current?.profiles?.[0];
+
+  const mainProfile =
+    current?.profiles?.find(
+      (p) => String(p.id) === String(current?.primaryProfileId)
+    ) || current?.profiles?.[0];
+
+  
 
   const filterJobs = (jobs) => {
     const keyword = searchText.toLowerCase().trim();
@@ -189,30 +242,9 @@ function Candidate() {
   );
 
   const filteredRecommendedJobs = useMemo(() => {
-    const base = filterJobs(recommendedJobs);
+    return filterJobs(recommendedJobs).slice(0, 20);
+  }, [recommendedJobs, searchText, jobType, selectedRole]);
 
-    if (candidateKeywords.length === 0) return base.slice(0, 20);
-
-    return base
-      .filter((job) => {
-        const text = [
-          job.title || "",
-          job.company_name || "",
-          typeof job.location === "string" ? job.location : "",
-        ]
-          .join(" ")
-          .toLowerCase();
-
-        return candidateKeywords.some((kw) => text.includes(kw));
-      })
-      .slice(0, 20);
-  }, [
-    recommendedJobs,
-    searchText,
-    jobType,
-    selectedRole,
-    candidateKeywords,
-  ]);
 
   const searchGoogle = (job) => {
     const query = encodeURIComponent(
@@ -226,9 +258,11 @@ function Candidate() {
   };
 
   const openApply = (job) => {
-    if (job.url?.trim())
+    if (job.url?.trim()) {
       window.open(job.url, "_blank", "noopener,noreferrer");
-    else searchGoogle(job);
+    } else {
+      searchGoogle(job);
+    }
   };
 
   const renderJobCard = (job, showSearch = false) => (
@@ -286,15 +320,13 @@ function Candidate() {
     </div>
   );
 
-  const firstProfile = current?.profiles?.[0];
-
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <nav className="navbar">
         <span className="navbar-logo">PortfolioHub</span>
         <div className="navbar-right">
           <span className="navbar-user">
-            {firstProfile?.name || current?.email || "Candidate"}
+            {selectedProfile?.name || current?.email || "Candidate"}
           </span>
           <button className="btn" onClick={() => navigate("/candidate/new")}>
             + Add Profile
@@ -323,7 +355,9 @@ function Candidate() {
             }}
           >
             Welcome back
-            {firstProfile?.name ? `, ${firstProfile.name.split(" ")[0]}` : ""}
+            {selectedProfile?.name
+              ? `, ${selectedProfile.name.split(" ")[0]}`
+              : ""}
           </h1>
         </div>
 
@@ -340,6 +374,24 @@ function Candidate() {
             <h2 className="section-title" style={{ marginBottom: 0 }}>
               Résumés
             </h2>
+
+            {!!current?.profiles?.length && (
+              <div style={{ marginTop: "1rem", maxWidth: "320px" }}>
+                <p className="section-subtitle">View Resume</p>
+                <select
+                  className="filter-select"
+                  value={selectedProfile?.id || ""}
+                  onChange={(e) => setViewedProfileId(String(e.target.value))}
+                >
+                  {current.profiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.name || "Untitled Resume"} -{" "}
+                      {profile.role || "No role"}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
 
@@ -370,31 +422,32 @@ function Candidate() {
           </div>
         ) : (
           <div className="grid-candidates" style={{ marginBottom: "2.5rem" }}>
-            {current.profiles.map((profile, i) => (
-              <div
-                key={profile.id}
-                className="card fade-up"
-                style={{ animationDelay: `${i * 0.06}s` }}
-              >
+            {selectedProfile && (
+              <div className="card fade-up">
                 <div style={{ marginBottom: "0.8rem" }}>
-                  <p className="candidate-name">{profile.name || "No name"}</p>
-                  <p className="candidate-role">{profile.role || "No role"}</p>
+                  <p className="candidate-name">
+                    {selectedProfile.name || "No name"}
+                  </p>
+                  <p className="candidate-role">
+                    {selectedProfile.role || "No role"}
+                  </p>
                 </div>
 
-                {Array.isArray(profile.skills) && profile.skills.length > 0 && (
-                  <div style={{ marginBottom: "1rem" }}>
-                    {profile.skills.slice(0, 5).map((skill) => (
-                      <span key={skill} className="tag">
-                        {skill}
-                      </span>
-                    ))}
-                    {profile.skills.length > 5 && (
-                      <span className="tag" style={{ opacity: 0.5 }}>
-                        +{profile.skills.length - 5}
-                      </span>
-                    )}
-                  </div>
-                )}
+                {Array.isArray(selectedProfile.skills) &&
+                  selectedProfile.skills.length > 0 && (
+                    <div style={{ marginBottom: "1rem" }}>
+                      {selectedProfile.skills.slice(0, 5).map((skill) => (
+                        <span key={skill} className="tag">
+                          {skill}
+                        </span>
+                      ))}
+                      {selectedProfile.skills.length > 5 && (
+                        <span className="tag" style={{ opacity: 0.5 }}>
+                          +{selectedProfile.skills.length - 5}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                 <div
                   style={{
@@ -404,9 +457,9 @@ function Candidate() {
                     marginBottom: "1rem",
                   }}
                 >
-                  {profile.github && (
+                  {selectedProfile.github && (
                     <a
-                      href={profile.github}
+                      href={selectedProfile.github}
                       target="_blank"
                       rel="noreferrer"
                       style={{ textDecoration: "none" }}
@@ -417,9 +470,9 @@ function Candidate() {
                     </a>
                   )}
 
-                  {profile.linkedin && (
+                  {selectedProfile.linkedin && (
                     <a
-                      href={profile.linkedin}
+                      href={selectedProfile.linkedin}
                       target="_blank"
                       rel="noreferrer"
                       style={{ textDecoration: "none" }}
@@ -429,41 +482,58 @@ function Candidate() {
                       </span>
                     </a>
                   )}
-
-                  
                 </div>
-
-    
 
                 <div className="repo-section">
                   <p className="repo-label">GitHub Projects</p>
-                  {loadingMap[profile.id] ? (
+                  {loadingMap[selectedProfile.id] ? (
                     <p
                       style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}
                     >
                       Fetching repos...
                     </p>
-                  ) : !repoMap[profile.id] || repoMap[profile.id].length === 0 ? (
+                  ) : !repoMap[selectedProfile.id] ||
+                    repoMap[selectedProfile.id].length === 0 ? (
                     <p
                       style={{ fontSize: "0.75rem", color: "var(--text-dim)" }}
                     >
                       No public repos found
                     </p>
                   ) : (
-                    repoMap[profile.id].map((repo) => (
-                      <div key={repo.id} className="repo-item">
+                    repoMap[selectedProfile.id].map((repo) => (
+                      <div
+                        key={repo.id}
+                        className="repo-item"
+                        style={{ cursor: "pointer" }}
+                        onClick={() =>
+                          navigate(
+                            `/project/${repo.owner.login}/${repo.name}`,
+                            {
+                              state: { repo },
+                            }
+                          )
+                        }
+                      >
                         <p className="repo-name">{repo.name}</p>
                         <p className="repo-desc">
                           {repo.description || "No description"}
                         </p>
-                        <a
-                          href={repo.html_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="repo-link"
+
+                        <button
+                          className="btn"
+                          style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(
+                              `/project/${repo.owner.login}/${repo.name}`,
+                              {
+                                state: { repo },
+                              }
+                            );
+                          }}
                         >
-                          View on GitHub ↗
-                        </a>
+                          View Project
+                        </button>
                       </div>
                     ))
                   )}
@@ -474,8 +544,8 @@ function Candidate() {
                     className="btn btn-primary"
                     style={{ fontSize: "0.7rem", padding: "6px 14px" }}
                     onClick={() =>
-                      navigate(`/hr/view/${profile.id}`, {
-                        state: { user: profile },
+                      navigate(`/hr/view/${selectedProfile.id}`, {
+                        state: { user: selectedProfile },
                       })
                     }
                   >
@@ -485,23 +555,32 @@ function Candidate() {
                     className="btn"
                     style={{ fontSize: "0.7rem", padding: "6px 14px" }}
                     onClick={() =>
-                      navigate(`/candidate/edit/${profile.id}`, {
-                        state: { user: profile },
+                      navigate(`/candidate/edit/${selectedProfile.id}`, {
+                        state: { user: selectedProfile },
                       })
                     }
                   >
                     Edit
                   </button>
+                  {String(selectedProfile?.id) !== String(mainProfile?.id) && (
+                    <button
+                      className="btn"
+                      style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                      onClick={() => handlePrimaryChange(String(selectedProfile.id))}
+                    >
+                      Set as Main Resume
+                    </button>
+                  )}
                   <button
                     className="btn btn-danger"
                     style={{ fontSize: "0.7rem", padding: "6px 14px" }}
-                    onClick={() => deleteResume(profile.id)}
+                    onClick={() => deleteResume(selectedProfile.id)}
                   >
                     Delete
                   </button>
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
 
@@ -590,7 +669,7 @@ function Candidate() {
         currentUser={{
           id: current?.id,
           name:
-            current?.profiles?.[0]?.name?.trim() || current?.email || "No name",
+            selectedProfile?.name?.trim() || current?.email || "No name",
         }}
         users={chatUsers}
       />
