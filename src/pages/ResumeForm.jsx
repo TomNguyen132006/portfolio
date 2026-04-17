@@ -155,19 +155,19 @@ function ResumeForm() {
             </div>
             <div>
               {fieldLabel("Job Role *")}
-              <input className="form-input" name="role" placeholder="e.g. Frontend Developer" value={form.role} onChange={handleChange} />
+              <input className="form-input" name="role" placeholder="e.g. Software Engineer, Nurse, Accountant" value={form.role} onChange={handleChange}/>
             </div>
             <div>
-              {fieldLabel("Category")}
+              {fieldLabel("Field of Work")}
               <input className="form-input" name="category" placeholder="e.g. Engineering, Design" value={form.category} onChange={handleChange} />
             </div>
             <div>
               {fieldLabel("Location")}
-              <input className="form-input" name="location" placeholder="e.g. New York, Remote" value={form.location} onChange={handleChange} />
+              <input className="form-input" name="location" placeholder="e.g. New York" value={form.location} onChange={handleChange} />
             </div>
             <div>
               {fieldLabel("Education")}
-              <input className="form-input" name="education" placeholder="e.g. B.S. Computer Science, MIT" value={form.education} onChange={handleChange} />
+              <input className="form-input" name="education" placeholder="e.g. Missouri State University, University of Wisconsin" value={form.education} onChange={handleChange} />
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ function ResumeForm() {
             </div>
             <div>
               {fieldLabel("GitHub")}
-              <input className="form-input" name="github" placeholder="github.com/yourname" value={form.github} onChange={handleChange} />
+              <input className="form-input" name="github" placeholder="github.com/yourUserName" value={form.github} onChange={handleChange} />
             </div>
           </div>
         </div>
