@@ -145,7 +145,7 @@ function Auth() {
             />
             <input
               name="role"
-              placeholder="Job Role (Frontend/Backend)"
+              placeholder="Job Role"
               onChange={handleChange}
             />
             <input
