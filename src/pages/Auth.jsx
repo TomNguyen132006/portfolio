@@ -1,3 +1,4 @@
+// src/pages/Auth.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
@@ -29,10 +30,14 @@ function Auth() {
       if (user.password !== form.password) return setError("Wrong password");
 
       localStorage.setItem("currentUser", JSON.stringify(user));
-
       if (user.role === "hr") navigate("/hr");
       else navigate("/candidate");
+
     } else {
+      if (!form.email || !form.password || !form.name) {
+        return setError("Email, password and name are required.");
+      }
+
       const exists = users.find((u) => u.email === form.email);
       if (exists) return setError("Email already exists");
 
@@ -44,11 +49,19 @@ function Auth() {
         profiles: [
           {
             id: Date.now(),
-            name: form.name,
-            role: form.role,
-            skills: form.skills?.split(",").map((s) => s.trim()) || [],
-            github: form.github,
-            linkedin: form.linkedin,
+            name: form.name.trim(),
+            email: form.email,
+            // Everything else starts empty — editable later in ResumeForm
+            role: "",
+            skills: [],
+            github: "",
+            linkedin: "",
+            category: "",
+            location: "",
+            education: "",
+            summary: "",
+            certifications: [],
+            licenses: [],
             isPublic: false,
           },
         ],
@@ -65,14 +78,12 @@ function Auth() {
 
   useEffect(() => {
     const glow = document.getElementById("glow");
-
     const moveGlow = (e) => {
       if (glow) {
         glow.style.left = e.clientX + "px";
         glow.style.top = e.clientY + "px";
       }
     };
-
     document.addEventListener("mousemove", moveGlow);
     return () => document.removeEventListener("mousemove", moveGlow);
   }, []);
@@ -80,7 +91,8 @@ function Auth() {
   return (
     <div className="auth-container">
       <div className={`auth-wrapper ${!isLogin ? "active" : ""}`}>
-        {/* LOGIN FORM */}
+
+        {/* ── LOGIN FORM ── */}
         <div className="form-section sign-in">
           <h1>Login</h1>
           <form onSubmit={handleSubmit}>
@@ -105,10 +117,11 @@ function Auth() {
           </form>
         </div>
 
-        {/* SIGNUP FORM */}
+        {/* ── SIGNUP FORM ── */}
         <div className="form-section sign-up">
           <h1>Sign Up</h1>
           <form onSubmit={handleSubmit}>
+
             <input
               name="email"
               placeholder="Email"
@@ -123,6 +136,14 @@ function Auth() {
               type="password"
               required
             />
+            <input
+              name="name"
+              placeholder="Full Name"
+              onChange={handleChange}
+              required
+            />
+
+            {/* Role toggle */}
             <div className="role-toggle">
               <div
                 className={roleType === "candidate" ? "active" : ""}
@@ -137,53 +158,38 @@ function Auth() {
                 HR
               </div>
             </div>
-            <input
-              name="name"
-              placeholder="Name"
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="role"
-              placeholder="Job Role (Frontend/Backend)"
-              onChange={handleChange}
-            />
-            <input
-              name="skills"
-              placeholder="Skills (comma separated)"
-              onChange={handleChange}
-            />
-            <input
-              name="github"
-              placeholder="GitHub URL"
-              onChange={handleChange}
-            />
-            <input
-              name="linkedin"
-              placeholder="LinkedIn URL"
-              onChange={handleChange}
-            />
+
             <button className="submit-btn" type="submit">
               Create Account
             </button>
+
             {error && <p className="error-msg">{error}</p>}
+
+            <p style={{ fontSize: "12px", color: "#94a3b8", marginTop: "12px", lineHeight: 1.5 }}>
+              You can add your role, skills, GitHub and more after signing up.
+            </p>
+
           </form>
         </div>
 
-        {/* OVERLAY */}
+        {/* ── OVERLAY ── */}
         <div className="overlay">
           <div className="overlay-panel">
             {isLogin ? (
               <>
                 <h2>New here?</h2>
                 <p>Create an account to start</p>
-                <button onClick={() => setIsLogin(false)}>Sign Up</button>
+                <button onClick={() => { setIsLogin(false); setError(""); }}>
+                  Sign Up
+                </button>
               </>
             ) : (
               <>
                 <h2>Already have an account?</h2>
                 <p>Login to continue</p>
-                <button onClick={() => setIsLogin(true)}>Login</button>
+                <button onClick={() => { setIsLogin(true); setError(""); }}>
+                  Login
+                </button>
               </>
             )}
           </div>
