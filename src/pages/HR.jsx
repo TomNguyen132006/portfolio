@@ -19,6 +19,7 @@ function HR() {
     company_name: "",
     location: "",
     type: "Full-time",
+    role: "",
     description: "",
     url: "",
   });
@@ -133,7 +134,8 @@ function HR() {
         skillText.includes(keyword);
 
       const matchRole =
-        selectedRole === "All" || profile.role === selectedRole;
+        selectedRole === "All" ||
+        (profile.role || "").toLowerCase() === selectedRole.toLowerCase();
 
       return matchSearch && matchRole;
     });

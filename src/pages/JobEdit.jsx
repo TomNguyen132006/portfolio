@@ -12,6 +12,7 @@ function JobEdit() {
     title:        job?.title        || "",
     company_name: job?.company_name || "",
     location:     job?.location     || "",
+    role:         job?.role         || "",
     type:         job?.type         || "Full-time",
     description:  job?.description  || "",
     url:          job?.url          || "",
@@ -115,6 +116,20 @@ function JobEdit() {
                 <option value="Part-time">Part-time</option>
                 <option value="Intern">Intern</option>
               </select>
+            </div>
+              <p style={{ fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-dim)", marginBottom: "6px" }}>
+                Role
+              </p>
+              <input
+                className="form-input"
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                placeholder="e.g. Sale, Nurse"
+              />
+
+            <div>
+
             </div>
 
             <div>
