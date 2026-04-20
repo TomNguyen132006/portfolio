@@ -210,7 +210,7 @@ function Candidate() {
       (p) => String(p.id) === String(current?.primaryProfileId)
     ) || current?.profiles?.[0];
 
-  
+
 
   const filterJobs = (jobs) => {
     const keyword = searchText.toLowerCase().trim();
@@ -230,7 +230,8 @@ function Candidate() {
 
       const matchType = jobType === "All" || getJobType(job) === jobType;
       const matchRole =
-        selectedRole === "All" || getRole(job.title || "") === selectedRole;
+        selectedRole === "All" ||
+        (job.role || getRole(job.title || "")) === selectedRole;
 
       return matchSearch && matchType && matchRole;
     });
@@ -273,7 +274,7 @@ function Candidate() {
       <p className="job-company">{job.company_name || "Unknown Company"}</p>
       <p className="job-title">{job.title || "No title"}</p>
       <p className="job-meta">
-        {getJobType(job)} · {getRole(job.title || "")}
+        {getJobType(job)} · {job.role || getRole(job.title || "")}
         {job.location
           ? ` · ${typeof job.location === "string"
             ? job.location
