@@ -20,19 +20,23 @@ function HR() {
     type: "Full-time", description: "", url: "",
   });
   const [showJobForm, setShowJobForm] = useState(false);
-  const [compareList, setCompareList] = useState([]); // 👈 new
+  const [compareList, setCompareList] = useState([]);
 
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites")) || [];
     setFavorites(favs);
-    const savedJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
-    setPostedJobs(savedJobs);
   }, []);
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
     if (!currentUser || currentUser.role !== "hr") { navigate("/auth"); return; }
     setCurrent(currentUser);
+
+    // ✅ Only load jobs belonging to this HR user
+    const allJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
+    const myJobs = allJobs.filter((job) => job.ownerId === currentUser.id);
+    setPostedJobs(myJobs);
+
     const accounts = JSON.parse(localStorage.getItem("accounts") || "[]");
     const candidateProfiles = accounts
       .filter((acc) => acc.role === "candidate")
@@ -99,7 +103,6 @@ function HR() {
     localStorage.setItem("favorites", JSON.stringify(updated));
   };
 
-  // 👇 new
   const toggleCompare = (candidate) => {
     setCompareList((prev) =>
       prev.find((c) => c.id === candidate.id)
@@ -116,8 +119,10 @@ function HR() {
       alert("Job title and company are required.");
       return;
     }
+
     const newJob = {
       id: Date.now(),
+      ownerId: current.id,  // ✅ tag job with HR's user ID
       ...jobForm,
       title: jobForm.title.trim(),
       company_name: jobForm.company_name.trim(),
@@ -127,17 +132,25 @@ function HR() {
       source: "HR Posting",
       createdAt: new Date().toISOString(),
     };
-    const updatedJobs = [newJob, ...postedJobs];
-    setPostedJobs(updatedJobs);
-    localStorage.setItem("postedJobs", JSON.stringify(updatedJobs));
+
+    // ✅ Save to full list in localStorage, update local state separately
+    const allJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
+    const updatedAll = [newJob, ...allJobs];
+    localStorage.setItem("postedJobs", JSON.stringify(updatedAll));
+    setPostedJobs((prev) => [newJob, ...prev]);
+
     setJobForm({ title: "", company_name: "", location: "", type: "Full-time", description: "", url: "" });
     setShowJobForm(false);
   };
 
   const deletePostedJob = (jobId) => {
-    const updatedJobs = postedJobs.filter((j) => j.id !== jobId);
-    setPostedJobs(updatedJobs);
-    localStorage.setItem("postedJobs", JSON.stringify(updatedJobs));
+    // ✅ Remove from full list in localStorage
+    const allJobs = JSON.parse(localStorage.getItem("postedJobs")) || [];
+    const updatedAll = allJobs.filter((j) => j.id !== jobId);
+    localStorage.setItem("postedJobs", JSON.stringify(updatedAll));
+
+    // Update local state
+    setPostedJobs((prev) => prev.filter((j) => j.id !== jobId));
   };
 
   return (
@@ -325,7 +338,7 @@ function HR() {
                   )}
                 </div>
 
-                {/* 👇 Compare checkbox */}
+                {/* Compare checkbox */}
                 <label style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   fontSize: "0.75rem", color: "var(--text-muted)",
@@ -366,7 +379,7 @@ function HR() {
         )}
       </div>
 
-      {/* 👇 Floating compare bar */}
+      {/* Floating compare bar */}
       {compareList.length >= 2 && (
         <div style={{
           position: "fixed", bottom: "2rem", left: "50%", transform: "translateX(-50%)",
