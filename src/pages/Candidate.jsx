@@ -599,27 +599,6 @@ function Candidate() {
             value={searchText === "All" ? "" : searchText}
             onChange={(e) => setSearchText(e.target.value || "All")}
           />
-          <select
-            className="filter-select"
-            value={jobType}
-            onChange={(e) => setJobType(e.target.value)}
-          >
-            <option value="All">All Types</option>
-            <option value="Intern">Intern</option>
-            <option value="Part-time">Part-time</option>
-            <option value="Full-time">Full-time</option>
-          </select>
-          <select
-            className="filter-select"
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-          >
-            {allRoles.map((role) => (
-              <option key={role} value={role}>
-                {role}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div style={{ marginBottom: "0.6rem" }}>
