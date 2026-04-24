@@ -161,12 +161,16 @@ function HR() {
   };
 
   const toggleCompare = (candidate) => {
+    const profileToCompare = {
+        ...candidate.mainProfile,
+        id: candidate.id,
+        email: candidate.email,
+    };
+
     setCompareList((prev) =>
       prev.find((c) => c.id === candidate.id)
         ? prev.filter((c) => c.id !== candidate.id)
-        : prev.length < 4
-          ? [...prev, candidate]
-          : prev
+        : prev.length < 4 ? [...prev, profileToCompare] : prev
     );
   };
 
