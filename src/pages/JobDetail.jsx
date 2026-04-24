@@ -52,7 +52,7 @@ function JobDetail() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
             <div>
               <p className="section-subtitle">Job Posting</p>
-              <h1 style={{ fontFamily: "var(--font-head)", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.01em", marginBottom: "4px" }}>
+              <h1 style={{fontFamily: "'Inter', sans-serif", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.01em", marginBottom: "4px",color: "var(--text)",   }}>
                 {job.title}
               </h1>
               <p className="candidate-role">{job.company_name}</p>

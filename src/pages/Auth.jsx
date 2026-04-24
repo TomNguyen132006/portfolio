@@ -62,7 +62,6 @@ function Auth() {
             summary: "",
             certifications: [],
             licenses: [],
-            isPublic: false,
           },
         ],
       };
@@ -76,17 +75,6 @@ function Auth() {
     }
   };
 
-  useEffect(() => {
-    const glow = document.getElementById("glow");
-    const moveGlow = (e) => {
-      if (glow) {
-        glow.style.left = e.clientX + "px";
-        glow.style.top = e.clientY + "px";
-      }
-    };
-    document.addEventListener("mousemove", moveGlow);
-    return () => document.removeEventListener("mousemove", moveGlow);
-  }, []);
 
   return (
     <div className="auth-container">
