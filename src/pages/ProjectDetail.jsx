@@ -98,7 +98,31 @@ function ProjectDetail() {
               href={repo.html_url}
               target="_blank"
               rel="noreferrer"
-              className="repo-link"
+              style={{
+                display: "inline-block",
+                padding: "10px 16px",
+                background: "linear-gradient(135deg, #24292e, #444c56)",
+                color: "#fff",
+                fontWeight: "600",
+                textDecoration: "none",
+                borderRadius: "8px",
+                boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+                transition: "all 0.3s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, #0366d6, #2188ff)";
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow =
+                  "0 6px 14px rgba(0,0,0,0.25)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, #24292e, #444c56)";
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 10px rgba(0,0,0,0.15)";
+              }}
             >
               Open on GitHub ↗
             </a>

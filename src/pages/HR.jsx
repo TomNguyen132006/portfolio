@@ -583,14 +583,21 @@ function HR() {
                           <p className="repo-desc">
                             {repo.description || "No description"}
                           </p>
-                          <a
-                            href={repo.html_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="repo-link"
-                          >
-                            View on GitHub ↗
-                          </a>
+                          <button
+                          className="btn"
+                          style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(
+                              `/project/${repo.owner.login}/${repo.name}`,
+                              {
+                                state: { repo },
+                              }
+                            );
+                          }}
+                        >
+                          View Project
+                        </button>
                         </div>
                       ))
                     )}

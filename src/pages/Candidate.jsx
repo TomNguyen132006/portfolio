@@ -193,13 +193,6 @@ function Candidate() {
     return "Other";
   };
 
-  const allRoles = useMemo(() => {
-    const roles = new Set();
-    [...postedJobs, ...recommendedJobs].forEach((job) =>
-      roles.add(getRole(job.title || ""))
-    );
-    return ["All", ...Array.from(roles).sort()];
-  }, [postedJobs, recommendedJobs]);
 
   const selectedProfile =
     current?.profiles?.find((p) => String(p.id) === String(viewedProfileId)) ||
@@ -228,12 +221,8 @@ function Candidate() {
         company.includes(keyword) ||
         location.includes(keyword);
 
-      const matchType = jobType === "All" || getJobType(job) === jobType;
-      const matchRole =
-        selectedRole === "All" ||
-        (job.role || getRole(job.title || "")) === selectedRole;
 
-      return matchSearch && matchType && matchRole;
+      return matchSearch;
     });
   };
 
@@ -300,6 +289,14 @@ function Candidate() {
       )}
 
       <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <button
+          className="btn"
+          style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+          onClick={() => navigate(`/job/view/${job.id}`, { state: { job } })
+          }
+        >
+          View Detail
+        </button>
         <button
           className="btn btn-primary"
           style={{ fontSize: "0.7rem", padding: "6px 14px" }}
