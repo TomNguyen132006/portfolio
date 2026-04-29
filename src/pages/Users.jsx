@@ -45,7 +45,6 @@ function Users() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
 
-      {/* ── Navbar ── */}
       <nav className="navbar">
         <span className="navbar-logo">PortfolioHub</span>
         <div className="navbar-right">
@@ -69,7 +68,6 @@ function Users() {
 
       <div className="page">
 
-        {/* ── Header ── */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p className="section-subtitle">Admin</p>
           <h1 style={{ fontFamily: "var(--font-head)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.01em" }}>
@@ -82,14 +80,12 @@ function Users() {
           )}
         </div>
 
-        {/* ── Add User form (collapsible) ── */}
         {showAddUser && (
           <div className="fade-up" style={{ marginBottom: "2rem" }}>
             <AddUser users={users} setUsers={setUsers} />
           </div>
         )}
 
-        {/* ── Search & Filter ── */}
         <div className="filter-bar">
           <input
             className="search-input"
@@ -137,13 +133,11 @@ function Users() {
                   className="card fade-up"
                   style={{ animationDelay: `${i * 0.05}s`, cursor: "pointer" }}
                 >
-                  {/* Header */}
                   <div style={{ marginBottom: "0.8rem" }}>
                     <p className="candidate-name">{user.name || "No Name"}</p>
                     <p className="candidate-role">{user.role || "—"}</p>
                   </div>
 
-                  {/* Skills */}
                   {(user.skills || []).length > 0 ? (
                     <div style={{ marginBottom: "1rem" }}>
                       {user.skills.slice(0, 5).map((skill) => (
@@ -161,7 +155,6 @@ function Users() {
                     </p>
                   )}
 
-                  {/* Links */}
                   {user.linkedin && (
                     <a
                       href={user.linkedin}
@@ -176,7 +169,6 @@ function Users() {
                     </a>
                   )}
 
-                  {/* Footer hint */}
                   <div style={{
                     marginTop: "1rem", paddingTop: "0.8rem",
                     borderTop: "1px solid var(--border)",

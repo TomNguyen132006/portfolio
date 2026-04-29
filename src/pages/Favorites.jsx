@@ -68,7 +68,6 @@ function Favorites() {
 
       <div className="page">
 
-        {/* ── Header ── */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p className="section-subtitle">HR Dashboard</p>
           <h1 style={{ fontFamily: "var(--font-head)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.01em" }}>
@@ -81,7 +80,6 @@ function Favorites() {
           )}
         </div>
 
-        {/* ── Empty state ── */}
         {favoriteProfiles.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
             <p style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>⭐</p>
@@ -100,7 +98,6 @@ function Favorites() {
                 className="card fade-up"
                 style={{ animationDelay: `${i * 0.05}s` }}
               >
-                {/* ── Card header ── */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.8rem" }}>
                   <div>
                     <p className="candidate-name">{profile.name || "No Name"}</p>
@@ -115,7 +112,6 @@ function Favorites() {
                   </button>
                 </div>
 
-                {/* ── Skills ── */}
                 {Array.isArray(profile.skills) && profile.skills.length > 0 && (
                   <div style={{ marginBottom: "1rem" }}>
                     {profile.skills.slice(0, 5).map((skill) => (
@@ -129,7 +125,6 @@ function Favorites() {
                   </div>
                 )}
 
-                {/* ── Actions ── */}
                 <div className="candidate-actions">
                   <button
                     className="btn btn-primary"
@@ -154,7 +149,6 @@ function Favorites() {
                   )}
                 </div>
 
-                {/* ── GitHub Repos ── */}
                 <div className="repo-section">
                   <p className="repo-label">GitHub Projects</p>
                   {loadingMap[profile.id] ? (

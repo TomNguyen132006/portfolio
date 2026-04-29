@@ -24,6 +24,8 @@ function HR() {
   });
   const [showJobForm, setShowJobForm] = useState(false);
   const [compareList, setCompareList] = useState([]);
+  const [authFilter, setAuthFilter] = useState("All");
+
 
   useEffect(() => {
     const favs = JSON.parse(localStorage.getItem("favorites")) || [];
@@ -137,9 +139,19 @@ function HR() {
       const matchRole =
         selectedRole === "All" || profile.role === selectedRole;
 
-      return matchSearch && matchRole;
+      // ✅ NEW: Work Authorization filter
+      const matchAuth =
+        authFilter === "All" ||
+        profile.workAuthorization === authFilter ||
+        profile.needsSponsorship === authFilter ||
+        profile.optStatus === authFilter;
+
+      // ✅ NEW: Country filter
+      
+
+      return matchSearch && matchRole && matchAuth;
     });
-  }, [candidates, search, selectedRole]);
+  }, [candidates, search, selectedRole, authFilter]);
 
   const allRoles = useMemo(() => {
     const roles = new Set();
@@ -397,8 +409,10 @@ function HR() {
           <p className="section-subtitle">Talent Pool</p>
           <h2 className="section-title">Browse Candidates</h2>
         </div>
+        
 
         <div className="filter-bar">
+          {/* 🔍 Search */}
           <input
             className="search-input"
             type="text"
@@ -406,6 +420,8 @@ function HR() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
+          {/* 🎯 Role Filter */}
           <select
             className="filter-select"
             value={selectedRole}
@@ -417,6 +433,24 @@ function HR() {
               </option>
             ))}
           </select>
+
+          {/* 🛂 Work Authorization Filter */}
+          <select
+            className="filter-select"
+            value={authFilter}
+            onChange={(e) => setAuthFilter(e.target.value)}
+          >
+            <option value="All">All Work Status</option>
+            <option value="US Citizen">US Citizen</option>
+            <option value="Permanent Resident">Permanent Resident</option>
+            <option value="F-1 Student">F-1 Student</option>
+            <option value="No">No Sponsorship Needed</option>
+            <option value="Yes">Needs Sponsorship</option>
+            <option value="OPT Eligible">OPT Eligible</option>
+            <option value="CPT Eligible">CPT Eligible</option>
+          </select>      
+
+          {/* 📊 Count (keep this LAST) */}
           <span
             style={{
               fontSize: "0.75rem",
@@ -584,20 +618,20 @@ function HR() {
                             {repo.description || "No description"}
                           </p>
                           <button
-                          className="btn"
-                          style={{ fontSize: "0.7rem", padding: "6px 14px" }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(
-                              `/project/${repo.owner.login}/${repo.name}`,
-                              {
-                                state: { repo },
-                              }
-                            );
-                          }}
-                        >
-                          View Project
-                        </button>
+                            className="btn"
+                            style={{ fontSize: "0.7rem", padding: "6px 14px" }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(
+                                `/project/${repo.owner.login}/${repo.name}`,
+                                {
+                                  state: { repo },
+                                }
+                              );
+                            }}
+                          >
+                            View Project
+                          </button>
                         </div>
                       ))
                     )}
