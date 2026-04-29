@@ -67,7 +67,6 @@ function Compare() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
 
-      {/* ── Navbar ── */}
       <nav className="navbar">
         <span className="navbar-logo">PortfolioHub</span>
         <div className="navbar-right">
@@ -78,7 +77,6 @@ function Compare() {
 
       <div className="page">
 
-        {/* ── Header ── */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p className="section-subtitle">HR Dashboard</p>
           <h1 style={{ fontFamily: "var(--font-head)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.01em" }}>
@@ -89,7 +87,6 @@ function Compare() {
           </p>
         </div>
 
-        {/* ── Candidate columns ── */}
         <div style={{
           display: "grid",
           gridTemplateColumns: `repeat(${list.length}, minmax(260px, 1fr))`,
@@ -143,7 +140,6 @@ function Compare() {
                   <p className="candidate-role">{user.role || "—"}</p>
                 </div>
 
-                {/* ── Match score ── */}
                 {i !== 0 && (
                   <div style={{
                     background: "var(--bg)",
@@ -192,7 +188,6 @@ function Compare() {
                   )}
                 </div>
 
-                {/* ── Favorite & links ── */}
                 <div style={{ paddingTop: "1rem", borderTop: "1px solid var(--border)" }}>
                   <div className="candidate-actions">
                     <button
@@ -229,7 +224,6 @@ function Compare() {
           })}
         </div>
 
-        {/* ── Skills matrix ── */}
         {allSkills.length > 0 && (
           <>
             <div className="divider" />

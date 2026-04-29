@@ -107,13 +107,11 @@ function ChatPopup({ currentUser, users = [] }) {
       const lastMessage = saved[saved.length - 1];
       if (!lastMessage) return;
 
-      // ignore my own message
       if (String(lastMessage.senderId) === String(currentUser.id)) return;
 
       const lastSeenKey = `lastSeen_${key}`;
       const lastSeenId = localStorage.getItem(lastSeenKey);
 
-      // ✅ ONLY process if new
       if (String(lastSeenId) === String(lastMessage.id)) return;
 
       // save last seen
