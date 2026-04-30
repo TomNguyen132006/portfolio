@@ -139,15 +139,11 @@ function HR() {
       const matchRole =
         selectedRole === "All" || profile.role === selectedRole;
 
-      // ✅ NEW: Work Authorization filter
       const matchAuth =
         authFilter === "All" ||
         profile.workAuthorization === authFilter ||
         profile.needsSponsorship === authFilter ||
         profile.optStatus === authFilter;
-
-      // ✅ NEW: Country filter
-      
 
       return matchSearch && matchRole && matchAuth;
     });
@@ -412,7 +408,6 @@ function HR() {
         
 
         <div className="filter-bar">
-          {/* 🔍 Search */}
           <input
             className="search-input"
             type="text"
@@ -421,7 +416,6 @@ function HR() {
             onChange={(e) => setSearch(e.target.value)}
           />
 
-          {/* 🎯 Role Filter */}
           <select
             className="filter-select"
             value={selectedRole}
@@ -434,7 +428,6 @@ function HR() {
             ))}
           </select>
 
-          {/* 🛂 Work Authorization Filter */}
           <select
             className="filter-select"
             value={authFilter}
@@ -450,7 +443,6 @@ function HR() {
             <option value="CPT Eligible">CPT Eligible</option>
           </select>      
 
-          {/* 📊 Count (keep this LAST) */}
           <span
             style={{
               fontSize: "0.75rem",

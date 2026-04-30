@@ -107,7 +107,6 @@ function Users() {
           </span>
         </div>
 
-        {/* ── User cards ── */}
         {filteredUsers.length === 0 ? (
           <div className="card" style={{ textAlign: "center", padding: "3rem" }}>
             <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1rem" }}>

@@ -87,7 +87,7 @@ function HRview() {
   const fields = [
     { label: "Email", value: accountFromStorage?.email || activeProfile.email },
     { label: "Role", value: activeProfile.role },
-    { label: "Category", value: activeProfile.category },
+    { label: "Country", value: activeProfile.country },
     { label: "Location", value: activeProfile.location },
     { label: "Education", value: activeProfile.education },
     {
@@ -102,6 +102,12 @@ function HRview() {
         ? activeProfile.licenses.join(", ")
         : activeProfile.licenses,
     },
+    { label: "Category", value: activeProfile.category },
+    { label: "Work Authorization", value: activeProfile.workAuthorization },
+    { label: "Needs Sponsorship", value: activeProfile.needsSponsorship },
+    { label: "OPT/CPT Status", value: activeProfile.optStatus },
+
+    
   ];
 
   const links = [
@@ -146,6 +152,7 @@ function HRview() {
               <p className="section-subtitle">
                 {isMainResume ? "Main Resume" : "Alternate Resume"}
               </p>
+
               <h1
                 style={{
                   fontFamily: "var(--font-head)",
@@ -157,6 +164,7 @@ function HRview() {
               >
                 {activeProfile.name || "No Name"}
               </h1>
+
               <p className="candidate-role">{activeProfile.role || "—"}</p>
 
               {!isMainResume && (

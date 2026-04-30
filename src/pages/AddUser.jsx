@@ -120,7 +120,6 @@ function AddUser({ users, setUsers }) {
 
       </div>
 
-      {/* ── Footer ── */}
       <div style={{
         display: "flex", alignItems: "center", gap: "1rem",
         marginTop: "1.5rem", paddingTop: "1.5rem",

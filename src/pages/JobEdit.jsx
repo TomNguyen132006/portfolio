@@ -1,4 +1,3 @@
-// src/pages/JobEdit.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./Main.css";
@@ -45,7 +44,6 @@ function JobEdit() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
 
-      {/* ── Navbar ── */}
       <nav className="navbar">
         <span className="navbar-logo">PortfolioHub</span>
         <div className="navbar-right">
@@ -55,7 +53,6 @@ function JobEdit() {
 
       <div className="page" style={{ maxWidth: "700px" }}>
 
-        {/* ── Header ── */}
         <div style={{ marginBottom: "2rem" }}>
           <p className="section-subtitle">HR Dashboard</p>
           <h1 style={{ fontFamily: "var(--font-head)", fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.01em" }}>
@@ -63,7 +60,6 @@ function JobEdit() {
           </h1>
         </div>
 
-        {/* ── Form card ── */}
         <div className="card fade-up" style={{ padding: "2rem" }}>
 
           <div className="form-grid">
@@ -161,7 +157,6 @@ function JobEdit() {
 
           </div>
 
-          {/* ── Footer actions ── */}
           <div style={{ display: "flex", gap: "10px", marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border)" }}>
             <button className="btn btn-primary" onClick={handleSave}>
               Save Changes

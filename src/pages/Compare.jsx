@@ -25,10 +25,8 @@ function Compare() {
 
   const removeCandidate = (id) => setList((prev) => prev.filter((p) => p.id !== id));
 
-  // All unique skills across all candidates
   const allSkills = [...new Set(list.flatMap((u) => u.skills || []))].sort();
 
-  // Match score based on shared skills with first candidate
   const getScore = (skills = []) => {
     const base = list[0]?.skills || [];
     if (!base.length) return 0;
@@ -103,7 +101,6 @@ function Compare() {
                 borderTop: i === 0 ? "3px solid var(--accent)" : "3px solid var(--border)",
               }}>
 
-                {/* ── Remove button ── */}
                 {list.length > 2 && (
                   <button
                     onClick={() => removeCandidate(user.id)}
@@ -124,7 +121,6 @@ function Compare() {
                   </button>
                 )}
 
-                {/* ── Baseline label ── */}
                 {i === 0 && (
                   <span style={{
                     fontSize: "0.62rem", letterSpacing: "0.08em", textTransform: "uppercase",
@@ -134,7 +130,6 @@ function Compare() {
                   </span>
                 )}
 
-                {/* ── Name & role ── */}
                 <div style={{ marginBottom: "1rem", paddingRight: "2rem" }}>
                   <p className="candidate-name">{user.name || "No Name"}</p>
                   <p className="candidate-role">{user.role || "—"}</p>
@@ -160,7 +155,6 @@ function Compare() {
                   </div>
                 )}
 
-                {/* ── Skills ── */}
                 <div style={{ marginBottom: "1rem" }}>
                   <p className="repo-label" style={{ marginBottom: "6px" }}>Skills</p>
                   <div>
@@ -172,7 +166,6 @@ function Compare() {
                           key={skill}
                           className="tag"
                           style={{
-                            // highlight skills NOT shared with baseline
                             opacity: i > 0 && !(list[0]?.skills || []).includes(skill) ? 0.4 : 1,
                           }}
                         >
