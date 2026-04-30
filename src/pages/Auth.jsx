@@ -83,7 +83,6 @@ function Auth() {
     <div className="auth-container">
       <div className={`auth-wrapper ${!isLogin ? "active" : ""}`}>
 
-        {/* ── LOGIN FORM ── */}
         <div className="form-section sign-in">
           <h1>Login</h1>
           <form onSubmit={handleSubmit}>
@@ -108,7 +107,6 @@ function Auth() {
           </form>
         </div>
 
-        {/* ── SIGNUP FORM ── */}
         <div className="form-section sign-up">
           <h1>Sign Up</h1>
           <form onSubmit={handleSubmit}>
@@ -134,7 +132,6 @@ function Auth() {
               required
             />
 
-            {/* Role toggle */}
             <div className="role-toggle">
               <div
                 className={roleType === "candidate" ? "active" : ""}
@@ -163,7 +160,6 @@ function Auth() {
           </form>
         </div>
 
-        {/* ── OVERLAY ── */}
         <div className="overlay">
           <div className="overlay-panel">
             {isLogin ? (

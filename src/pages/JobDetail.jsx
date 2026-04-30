@@ -7,7 +7,6 @@ function JobDetail() {
   const navigate = useNavigate();
   const job = state?.job;
 
-  // 🔴 Handle missing job (refresh / direct URL)
   if (!job) {
     return (
       <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
@@ -36,7 +35,6 @@ function JobDetail() {
     );
   }
 
-  // 🔥 Get poster info from localStorage
   const accounts = JSON.parse(localStorage.getItem("accounts")) || [];
 
   const postedBy = accounts.find(
@@ -48,13 +46,11 @@ function JobDetail() {
     postedBy?.email ||
     "Unknown HR";
 
-  // 🔹 Google fallback
   const searchGoogle = () => {
     const q = encodeURIComponent(`${job.company_name} ${job.title}`);
     window.open(`https://www.google.com/search?q=${q}`, "_blank");
   };
 
-  // 🔹 Fields display
   const fields = [
     { label: "Company", value: job.company_name },
     { label: "Posted By", value: posterName }, // ✅ NEW
@@ -82,7 +78,6 @@ function JobDetail() {
       </nav>
 
       <div className="page" style={{ maxWidth: "800px" }}>
-        {/* ── Header card ── */}
         <div
           className="card fade-up"
           style={{ padding: "2rem", marginBottom: "1.5rem" }}
@@ -115,7 +110,6 @@ function JobDetail() {
               <p className="candidate-role">{job.company_name}</p>
             </div>
 
-            {/* Apply / Search */}
             <div>
               {job.url ? (
                 <a
@@ -139,7 +133,6 @@ function JobDetail() {
             </div>
           </div>
 
-          {/* ── Meta fields ── */}
           <div
             style={{
               display: "flex",
@@ -177,7 +170,6 @@ function JobDetail() {
           </div>
         </div>
 
-        {/* ── Description ── */}
         {job.description && (
           <div
             className="card fade-up"

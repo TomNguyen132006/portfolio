@@ -17,34 +17,33 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-        {/* 🔐 Auth first */}
         <Route path="/auth" element={<Auth />} />
 
-        {/* 👨‍💼 HR */}
         <Route path="/hr" element={<HR />} />
 
-        {/* 👤 Candidate */}
         <Route path="/candidate" element={<Candidate />} />
 
         <Route path="/candidate/new" element={<ResumeForm />} />
 
-        {/* (optional old routes) */}
         <Route path="/users" element={<Users />} />
+
         <Route path="/users/:id" element={<Profile />} />
 
-        {/* 🏠 Default → Auth */}
         <Route path="/" element={<Auth />} />
 
         <Route path="/favorites" element={<Favorites />} />
         
         <Route path="/compare" element={<Compare />} />
+
         <Route path="/candidate/edit/:id" element={<ResumeForm />} />
 
         <Route path="/hr/view/:id" element={<HRview />} />
-        <Route path="/job/view/:id" element={<JobDetail />} />
-        <Route path="/job/edit/:id" element={<JobEdit />} />
-        <Route path="/project/:username/:repoName" element={<ProjectDetail />} />
 
+        <Route path="/job/view/:id" element={<JobDetail />} />
+
+        <Route path="/job/edit/:id" element={<JobEdit />} />
+
+        <Route path="/project/:username/:repoName" element={<ProjectDetail />} />
         
         <Route path="*" element={<h1>Page Not Found</h1>} />
 

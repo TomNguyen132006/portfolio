@@ -114,7 +114,6 @@ function ChatPopup({ currentUser, users = [] }) {
 
       if (String(lastSeenId) === String(lastMessage.id)) return;
 
-      // save last seen
       localStorage.setItem(lastSeenKey, lastMessage.id);
 
       const isViewing =

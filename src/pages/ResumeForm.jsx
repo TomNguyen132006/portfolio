@@ -1,4 +1,3 @@
-// src/pages/ResumeForm.jsx
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import "./Main.css";

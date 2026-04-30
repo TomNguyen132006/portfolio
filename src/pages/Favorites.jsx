@@ -56,7 +56,6 @@ function Favorites() {
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
 
-      {/* ── Navbar ── */}
       <nav className="navbar">
         <span className="navbar-logo">PortfolioHub</span>
         <div className="navbar-right">
