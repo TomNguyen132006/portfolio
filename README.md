@@ -28,10 +28,9 @@ This project aims to:
 | Layer | Technology |
 |------|------------|
 | Frontend | React, Next.js |
-| Language | TypeScript / JavaScript |
+| Language | JavaScript |
 | Styling | Tailwind CSS |
 | Backend | Node.js / API Routes |
-| Database | (if used: Firebase / MongoDB / etc.) |
 
 ---
 
